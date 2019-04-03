@@ -9,102 +9,239 @@ local level, but this will at least provide a foundation.
 
 import logging
 import os
-from sys import stdout
+import sys
+from ._version import __version__
 
 
+BASIC_LOGGING_FORMAT = "%(message)s"
+DEV_LOGGING_FMT = "[%(asctime)s] {%(name)s:%(lineno)d} (%(funcName)s) [%(levelname)s] > %(message)s "
+PACKAGE_NAME = os.path.basename(os.path.dirname(__file__))
+STREAMS = {"OUT": sys.stdout, "ERR": sys.stderr}
+DEFAULT_STREAM = STREAMS["ERR"]
 LOGGING_LEVEL = "INFO"
-LOGGING_LOCATIONS = (stdout, )
+LOGGING_LOCATIONS = (sys.stdout, )
+TRACE_LEVEL_VALUE = 5
+TRACE_LEVEL_NAME = "TRACE"
+CUSTOM_LEVELS = {TRACE_LEVEL_NAME: TRACE_LEVEL_VALUE}
+SILENCE_LOGS_OPTNAME = "silent"
+VERBOSITY_OPTNAME = "verbosity"
+DEVMODE_OPTNAME = "logdev"
+PARAM_BY_OPTNAME = {DEVMODE_OPTNAME: "devmode"}
 
-# Default user logging format is simple
-DEFAULT_LOGGING_FMT = "%(message)s"
-# Developer logger format is more information-rich
-DEV_LOGGING_FMT = "%(module)s:%(lineno)d (%(funcName)s) [%(levelname)s] > %(message)s "
+# Translation of verbosity into logging level.
+# Log message count monotonically increases in verbosity while it decreases
+# in logging level, making verbosity a more intuitive specification mechanism.
+_WARN_REPR = "WARN"
+LEVEL_BY_VERBOSITY = ["CRITICAL", "ERROR", _WARN_REPR, "INFO", "DEBUG"]
+
+LOGGING_CLI_OPTDATA = {
+    SILENCE_LOGS_OPTNAME: {
+        "action": "store_true", "help": "Silence logging"},
+    VERBOSITY_OPTNAME: {
+        "help": "Relative measure of interest in logs; this can be an "
+                "integer in [0, 5], or a Python builtin logging name)"},
+    DEVMODE_OPTNAME: {
+        "action": "store_true",
+        "help": "Handle logging in development mode; perhaps among other "
+                "facets, make the format more information-rich."}
+}
 
 
-# Ensure that we have a handler and don't get a logging exception.
-# Note that this was originally with looper.models.
-_LOGGER = logging.getLogger(__name__)
-if not logging.getLogger().handlers:
-    _LOGGER.addHandler(logging.NullHandler())
-
-
-def setup_logger(name, level, additional_locations=None, devmode=False):
+def add_logging_options(parser):
     """
-    Establish a logger to provide general execution information.\
+    Augment a CLI argument parser with this package's logging options.
 
-    :param str name: name for the Logger
-    :param int | str level: logging level
-    :param tuple(str | FileIO[str]) additional_locations: supplementary
-        destination(s) to which to ship logs
-    :param bool devmode: whether to use developer logging config
-    :return logging.Logger: project-root logger
+    :param argparse.ArgumentParser parser: CLI options and argument parser to
+        augment with logging options.
+    :return argparse.ArgumentParser: the input argument, supplemented with this
+        package's logging options.
+    """
+    for optname, optdata in LOGGING_CLI_OPTDATA.items():
+        parser.add_argument("--{}".format(optname), **optdata)
+    return parser
+
+
+def logger_via_cli(opts, **kwargs):
+    """
+    Convenience function creating a logger.
+
+    This module provides the ability to augment a CLI parser with
+    logging-related options/arguments so that client applications do not need
+    intimate knowledge of the implementation. This function completes that
+    lack of burden, parsing values for the options supplied herein.
+
+    :param argparse.Namespace opts: command-line options/arguments.
+    :return logging.Logger: configured logger instance.
+    :raise pararead.logs.AbsentOptionException: if one of the expected options
+        isn't available in the given Namespace. Such a case suggests that a
+        client application didn't use this module to add the expected logging
+        options to a parser.
+
+    """
+    # Within the key, translate the option name if needed. If it's not
+    # present within the translations mapping, use the original optname.
+    # Once translation's done (if needed), parse out the
+    logs_cli_args = {}
+    for optname in LOGGING_CLI_OPTDATA.keys():
+        # Client must add the expected options, via the API or otherwise.
+        try:
+            optval = getattr(opts, optname)
+        except AttributeError:
+            raise AbsentOptionException(optname)
+        else:
+            # Translate the option name if needed (i.e., for discordance
+            # between the CLI version and the logger setup signature).
+            logs_cli_args[PARAM_BY_OPTNAME.get(optname, optname)] = optval
+    logs_cli_args.update(kwargs)
+    return setup_logger(**logs_cli_args)
+
+
+def setup_logger(
+        stream=None, logfile=None,
+        make_root=True, propagate=False, silent=False, devmode=False,
+        verbosity=None, fmt=None, datefmt=None):
+    """
+    Establish the package-level logger.
+
+    This is intended to be called just once per "session", with a "session"
+    defined as an invocation of the main workflow, a testing session, or an
+    import of the primary abstractions, e.g. in an interactive iPython session.
+
+    :param str stream: standard stream to use as log destination. The default
+        behavior is to write logs to stdout, even if null is passed here. This
+        is to allow a CLI argument as input to stream parameter, where it may be
+        undesirable to require specification of a default value in the client
+        application in order to prevent passing None if no CLI option value
+        is given. To disable standard stream logging, set 'silent' to True
+        or pass a path to a file to which to write logs, which gets priority
+        over a standard stream as the destination for log messages.
+    :param str | FileIO[str] logfile: path to filesystem location to use as
+        logs destination. if provided, this mutes standard stream logging.
+    :param bool make_root: whether to use returned logger as root logger. This
+        means the name will be 'root' and that messages will not propagate.
+    :param bool propagate: whether to allow messages from this logger to reach
+        parent logger(s).
+    :param bool silent: whether to silence logging; this is only guaranteed for
+        messages from this logger and for those from loggers beneath this one
+        in the runtime hierarchy without no separate handling. Propagation must
+        also be turned off separately--if this is not the root logger--in
+        order to ensure that messages are not handled and emitted from a
+        potential parent to the logger built here.
+    :param bool devmode: whether to log in development mode; possibly among
+        other behavioral changes to logs handling, use a more information-rich
+        message format template.
+    :param int | str verbosity: alternate mode of expression for logging level
+        that better accords with intuition about how to convey this. It's
+        positively associated with message volume rather than negatively so, as
+        logging level is. This takes precedence over 'level' if both are present.
+    :param str fmt: message format/template.
+    :param str datefmt: format/template for time component of a log record.
+    :return logging.Logger: configured Logger instance
+
     """
 
-    logging.addLevelName(5, "VERY_FINE")
-
-    fmt = DEV_LOGGING_FMT if devmode else DEFAULT_LOGGING_FMT
+    # Enable named ultrafine logging for debugging.
+    for level_name, level_value in CUSTOM_LEVELS.items():
+        logging.addLevelName(level_value, level_name)
 
     # Establish the logger.
+    name = "" if make_root else PACKAGE_NAME
     logger = logging.getLogger(name)
-    # First remove any previously-added handlers
     logger.handlers = []
-    logger.propagate = False
+    logger.propagate = propagate and not make_root
 
-    # Handle int- or text-specific logging level.
-    try:
-        level = int(level)
-    except ValueError:
-        level = level.upper()
+    # Either short-circuit with a silent logger or parse and set level.
+    if silent:
+        logger.addHandler(logging.NullHandler())
+        return logger
 
-    try:
-        logger.setLevel(level)
-    except Exception:
-        logging.error("Can't set logging level to %s; instead using: '%s'",
-                      str(level), str(LOGGING_LEVEL))
-        level = LOGGING_LEVEL
-        logger.setLevel(level)
+    level = _level_from_verbosity(verbosity or LOGGING_LEVEL)
+    logger.setLevel(level)
 
-    # Process any additional locations.
-    locations_exception = None
-    where = LOGGING_LOCATIONS
-    if additional_locations:
-        if isinstance(additional_locations, str):
-            additional_locations = (additional_locations, )
-        try:
-            where = LOGGING_LOCATIONS + tuple(additional_locations)
-        except TypeError as e:
-            locations_exception = e
-    if locations_exception:
-        logging.warning(
-            "Could not interpret {} as supplementary root logger target "
-            "destinations; using {} as root logger location(s)".
-            format(additional_locations, LOGGING_LOCATIONS))
+    # Logfile supersedes stream logging.
+    if logfile:
+        logfile_folder = os.path.dirname(logfile)
+        if not os.path.exists(logfile_folder):
+            os.makedirs(logfile_folder)
 
-    # Add the handlers.
-    formatter = logging.Formatter(fmt=(fmt or DEFAULT_LOGGING_FMT))
-    for loc in where:
-        if isinstance(loc, str):
-            # File destination
-            dirpath = os.path.abspath(os.path.dirname(loc))
-            if not os.path.exists(dirpath):
-                os.makedirs(dirpath)
-            handler_type = logging.FileHandler
-        elif hasattr(loc, "write"):
-            # Stream destination
-            handler_type = logging.StreamHandler
+        # Create and add the handler, overwriting rather than appending.
+        handler = logging.FileHandler(logfile, mode='w')
+
+    else:
+        stream = stream or DEFAULT_STREAM
+
+        # Deal with possible argument types.
+        if stream in [sys.stderr, sys.stdout]:
+            stream_loc = stream
         else:
-            # Strange supplementary destination
-            logging.info("{} as logs destination appears to be neither "
-                         "a filepath nor a stream.".format(loc))
-            continue
+            try:
+                # Assume that we have a stream-indicative text argument.
+                stream_loc = STREAMS[stream.upper()]
+            except (AttributeError, KeyError):
+                # Fall back on default stream since
+                # arguments indicate that one should be activate.
+                print("Invalid stream location: {}; using {}".
+                      format(stream, DEFAULT_STREAM))
+                stream_loc = DEFAULT_STREAM
 
-        if handler_type is logging.FileHandler:
-            handler = handler_type(loc, mode='w')
-        else:
-            handler = handler_type(loc)
+        handler = logging.StreamHandler(stream_loc)
 
-        handler.setLevel(level)
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+    # Determine format.
+    if not fmt:
+        use_dev = devmode or isinstance(handler, logging.FileHandler) or \
+                  level <= logging.DEBUG
+        fmt = DEV_LOGGING_FMT if use_dev else BASIC_LOGGING_FORMAT
 
+    handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=datefmt))
+    handler.setLevel(level)
+    logger.addHandler(handler)
+    logger.info("Configured logger '%s' using %s v%s",
+                logger.name, PACKAGE_NAME, __version__)
     return logger
+
+
+def _level_from_verbosity(verbosity):
+    """
+    Translation of verbosity into logging level.
+
+    Log message count monotonically increases in verbosity
+    while it decreases in logging level, making verbosity
+    a more intuitive specification mechanism for users.
+
+    :param int | str verbosity: small integral value representing a relative
+        measure of interest in seeing messages about program execution,
+        or the name of a Python builtin logging level
+    :return int: numeric logging level in accordance with Python builtin logging
+
+    """
+    try:
+        verbosity = int(verbosity)
+    except:
+        pass
+    if isinstance(verbosity, str):
+        v = verbosity.upper()
+        if v.startswith(_WARN_REPR):
+            v = _WARN_REPR
+        if v not in LEVEL_BY_VERBOSITY:
+            raise ValueError(
+                "Invalid logging verbosity ('{}'); choose from: "
+                "{}".format(verbosity, ", ".join(LEVEL_BY_VERBOSITY)))
+        return getattr(logging, v)
+    elif isinstance(verbosity, int):
+        # Allow negative value to mute even ERROR level but not CRITICAL.
+        # Also handle excessively high verbosity request.
+        v = min(max(verbosity, 0), len(LEVEL_BY_VERBOSITY) - 1)
+        return LEVEL_BY_VERBOSITY[v]
+    else:
+        raise TypeError("Verbosity must be string or int; got {} ({})"
+                        .format(verbosity, type(verbosity)))
+
+
+class AbsentOptionException(Exception):
+    """ Exception subtype suggesting that client should add log options. """
+    def __init__(self, missing_optname):
+        likely_reason = "'{}' not in the parsed options; was {} used to " \
+                        "add CLI logging options to an argument parser?". \
+                format(missing_optname, "{}.{}".format(
+                        __name__, add_logging_options.__name__))
+        super(AbsentOptionException, self).__init__(likely_reason)
