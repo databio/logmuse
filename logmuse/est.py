@@ -12,6 +12,11 @@ import os
 import sys
 from ._version import __version__
 
+__author__ = "Vince Reuter"
+__email__ = "vreuter@virginia.edu"
+
+__all__ = ["add_logging_options", "logger_via_cli", "setup_logger", "AbsentOptionException"]
+
 
 BASIC_LOGGING_FORMAT = "%(message)s"
 DEV_LOGGING_FMT = "[%(asctime)s] {%(name)s:%(lineno)d} (%(funcName)s) [%(levelname)s] > %(message)s "
