@@ -30,7 +30,7 @@ if sys.version_info >= (3, ):
 extra["install_requires"] = DEPENDENCIES
 
 
-with open("{}/_version.py".format(PKG), 'r') as versionfile:
+with open(os.path.join(PKG, "_version"), 'r') as versionfile:
     version = versionfile.readline().split()[-1].strip("\"'\n")
 
 # Handle the pypi README formatting.
