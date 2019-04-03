@@ -29,7 +29,8 @@ def read_reqs(reqs_name):
 extra = {}
 
 # Ordinary dependencies
-DEPENDENCIES = read_reqs("all")
+#DEPENDENCIES = read_reqs("all")
+DEPENDENCIES = []
 
 # 2to3
 if sys.version_info >= (3, ):
@@ -37,7 +38,7 @@ if sys.version_info >= (3, ):
 extra["install_requires"] = DEPENDENCIES
 
 
-with open(os.path.join(PKG, "_version"), 'r') as versionfile:
+with open(os.path.join(PKG, "_version.py"), 'r') as versionfile:
     version = versionfile.readline().split()[-1].strip("\"'\n")
 
 # Handle the pypi README formatting.
@@ -69,8 +70,8 @@ setup(
     license="BSD2",
     scripts=None,
     include_package_data=True,
-    test_suite="tests",
-    tests_require=read_reqs("dev"),
-    setup_requires=(["pytest-runner"] if {"test", "pytest", "ptr"} & set(sys.argv) else []),
+    #test_suite="tests",
+    #tests_require=read_reqs("dev"),
+    #setup_requires=(["pytest-runner"] if {"test", "pytest", "ptr"} & set(sys.argv) else []),
     **extra
 )
