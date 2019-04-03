@@ -8,6 +8,13 @@ REQDIR = "requirements"
 
 
 def read_reqs(reqs_name):
+    """
+    From text file read dependencies list.
+
+    :param str reqs_name: name of the kind of requirements to parse, used to
+        determine the suffix for the requirements file to find and parse
+    :return list[str]: dependency specification strings
+    """
     deps = []
     fp = os.path.join(REQDIR, "requirements-{}.txt".format(reqs_name))
     with open(fp, 'r') as f:
