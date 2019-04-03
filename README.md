@@ -1,3 +1,3 @@
-# infomuse
+# logmuse
 Small logging setup package
 
