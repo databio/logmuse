@@ -104,7 +104,7 @@ def logger_via_cli(opts, **kwargs):
 def setup_logger(
         name="", level=None, stream=None, logfile=None,
         make_root=None, propagate=False, silent=False, devmode=False,
-        verbosity=None, fmt=None, datefmt=None):
+        verbosity=None, fmt=None, datefmt=None, plain_format=False):
     """
     Establish and configure primary logger.
 
@@ -142,6 +142,8 @@ def setup_logger(
         logging level is. This takes precedence over 'level' if both are present.
     :param str fmt: message format/template.
     :param str datefmt: format/template for time component of a log record.
+    :param bool plain_format: force use of plain message format, even if
+        in development mode (debug level)
     :return logging.Logger: configured Logger instance
     :raise ValueError: if attempting to name explicitly non-root logger with
         a root name, or if both level and verbosity are specified
@@ -226,7 +228,7 @@ def setup_logger(
     if not fmt:
         use_dev = devmode or isinstance(handler, logging.FileHandler) or \
                   level <= logging.DEBUG
-        fmt = DEV_LOGGING_FMT if use_dev else BASIC_LOGGING_FORMAT
+        fmt = DEV_LOGGING_FMT if use_dev and not plain_format else BASIC_LOGGING_FORMAT
 
     handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=datefmt))
     handler.setLevel(level)
