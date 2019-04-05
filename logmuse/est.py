@@ -197,18 +197,17 @@ def setup_logger(
         level = LOGGING_LEVEL
         logger.setLevel(level)
 
-    # Logfile supersedes stream logging.
+    handlers = []
+
     if logfile:
         logfile_folder = os.path.dirname(logfile)
         if not os.path.exists(logfile_folder):
             os.makedirs(logfile_folder)
 
         # Create and add the handler, overwriting rather than appending.
-        handler = logging.FileHandler(logfile, mode='w')
-
-    else:
+        handlers.append(logging.FileHandler(logfile, mode='w'))
+    if stream or not logfile:
         stream = stream or DEFAULT_STREAM
-
         # Deal with possible argument types.
         if stream in [sys.stderr, sys.stdout]:
             stream_loc = stream
@@ -222,20 +221,20 @@ def setup_logger(
                 print("Invalid stream location: {}; using {}".
                       format(stream, DEFAULT_STREAM))
                 stream_loc = DEFAULT_STREAM
+        handlers.append(logging.StreamHandler(stream_loc))
 
-        handler = logging.StreamHandler(stream_loc)
+    fine = level <= logging.DEBUG
+    def get_fmt(hdlr):
+        return BASIC_LOGGING_FORMAT if plain_format or not \
+            (devmode or fine or isinstance(hdlr, logging.FileHandler)) else DEV_LOGGING_FMT
 
-    # Determine format.
-    if not fmt:
-        use_dev = devmode or isinstance(handler, logging.FileHandler) or \
-                  level <= logging.DEBUG
-        fmt = DEV_LOGGING_FMT if use_dev and not plain_format else BASIC_LOGGING_FORMAT
-
-    handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=datefmt))
-    handler.setLevel(level)
-    logger.addHandler(handler)
+    for h in handlers:
+        h.setFormatter(logging.Formatter(get_fmt(h), datefmt=datefmt))
+        h.setLevel(level)
+        logger.addHandler(h)
     logger.info("Configured logger '%s' using %s v%s",
                 logger.name, PACKAGE_NAME, __version__)
+
     return logger
 
 
