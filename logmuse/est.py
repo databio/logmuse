@@ -20,7 +20,7 @@ __all__ = ["add_logging_options", "logger_via_cli", "setup_logger", "AbsentOptio
 
 BASIC_LOGGING_FORMAT = "%(message)s"
 DEV_LOGGING_FMT = "[%(asctime)s] {%(name)s:%(lineno)d} (%(funcName)s) [%(levelname)s] > %(message)s "
-PACKAGE_NAME = os.path.basename(os.path.dirname(__file__))
+PACKAGE_NAME = "logmuse"
 STREAMS = {"OUT": sys.stdout, "ERR": sys.stderr}
 DEFAULT_STREAM = STREAMS["ERR"]
 LOGGING_LEVEL = "INFO"
@@ -102,16 +102,17 @@ def logger_via_cli(opts, **kwargs):
 
 
 def setup_logger(
-        stream=None, logfile=None,
-        make_root=True, propagate=False, silent=False, devmode=False,
+        name="", level=None, stream=None, logfile=None,
+        make_root=None, propagate=False, silent=False, devmode=False,
         verbosity=None, fmt=None, datefmt=None):
     """
-    Establish the package-level logger.
+    Establish and configure primary logger.
 
     This is intended to be called just once per "session", with a "session"
     defined as an invocation of the main workflow, a testing session, or an
     import of the primary abstractions, e.g. in an interactive iPython session.
 
+    :param str name: name for the logger
     :param str stream: standard stream to use as log destination. The default
         behavior is to write logs to stdout, even if null is passed here. This
         is to allow a CLI argument as input to stream parameter, where it may be
@@ -142,15 +143,27 @@ def setup_logger(
     :param str fmt: message format/template.
     :param str datefmt: format/template for time component of a log record.
     :return logging.Logger: configured Logger instance
-
+    :raise ValueError: if attempting to name explicitly non-root logger with
+        a root name, or if both level and verbosity are specified
     """
+
+    if make_root is True:
+        if propagate:
+            logging.warning("Propagation from root logger is nonsense")
+        if name and name != "root":
+            logging.warning("Requested root logger with non-root name: "
+                            "{}".format(name))
+    else:
+        name = name or PACKAGE_NAME
+        if make_root is False and name == "root":
+            raise ValueError(
+                "Requested non-root logger with root name: {}".format(name))
 
     # Enable named ultrafine logging for debugging.
     for level_name, level_value in CUSTOM_LEVELS.items():
         logging.addLevelName(level_value, level_name)
 
     # Establish the logger.
-    name = "" if make_root else PACKAGE_NAME
     logger = logging.getLogger(name)
     logger.handlers = []
     logger.propagate = propagate and not make_root
@@ -160,8 +173,25 @@ def setup_logger(
         logger.addHandler(logging.NullHandler())
         return logger
 
-    level = _level_from_verbosity(verbosity or LOGGING_LEVEL)
-    logger.setLevel(level)
+    # Determine the logger's listening level.
+    if level and verbosity:
+        raise ValueError("Cannot specify both level and verbosity; got {} and "
+                         "{}, respectively".format(level, verbosity))
+    elif level:
+        # Handle int- or text-specific logging level.
+        try:
+            level = int(level)
+        except ValueError:
+            level = level.upper()
+    else:
+        level = _level_from_verbosity(verbosity or LOGGING_LEVEL)
+    try:
+        logger.setLevel(level)
+    except Exception:
+        logging.error("Can't set logging level to %s; instead using: '%s'",
+                      str(level), str(LOGGING_LEVEL))
+        level = LOGGING_LEVEL
+        logger.setLevel(level)
 
     # Logfile supersedes stream logging.
     if logfile:
@@ -217,7 +247,6 @@ def _level_from_verbosity(verbosity):
         measure of interest in seeing messages about program execution,
         or the name of a Python builtin logging level
     :return int: numeric logging level in accordance with Python builtin logging
-
     """
     try:
         verbosity = int(verbosity)
