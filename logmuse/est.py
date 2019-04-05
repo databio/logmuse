@@ -186,6 +186,7 @@ def setup_logger(
     else:
         level = _level_from_verbosity(verbosity or LOGGING_LEVEL)
     try:
+        level = getattr(logging, level) if isinstance(level, str) else level
         logger.setLevel(level)
     except Exception:
         logging.error("Can't set logging level to %s; instead using: '%s'",
