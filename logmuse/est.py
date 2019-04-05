@@ -24,7 +24,7 @@ PACKAGE_NAME = "logmuse"
 STREAMS = {"OUT": sys.stdout, "ERR": sys.stderr}
 DEFAULT_STREAM = STREAMS["ERR"]
 LOGGING_LEVEL = "INFO"
-LOGGING_LOCATIONS = (sys.stdout, )
+LOGGING_LOCATIONS = (DEFAULT_STREAM, )
 TRACE_LEVEL_VALUE = 5
 TRACE_LEVEL_NAME = "TRACE"
 CUSTOM_LEVELS = {TRACE_LEVEL_NAME: TRACE_LEVEL_VALUE}
@@ -113,6 +113,7 @@ def setup_logger(
     import of the primary abstractions, e.g. in an interactive iPython session.
 
     :param str name: name for the logger
+    :param int | str level: minimal level of messages to listen for
     :param str stream: standard stream to use as log destination. The default
         behavior is to write logs to stdout, even if null is passed here. This
         is to allow a CLI argument as input to stream parameter, where it may be
