@@ -65,7 +65,7 @@ setup(
         "Programming Language :: Python :: 3.6",
     ],
     keywords="logging, workflow, logger, logs",
-    url="https://github.com/vreuter/{}/".format(PKG),
+    url="https://github.com/databio/{}/".format(PKG),
     author=u"Vince Reuter",
     license="BSD2",
     scripts=None,
