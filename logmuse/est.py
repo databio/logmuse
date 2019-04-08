@@ -28,10 +28,10 @@ LOGGING_LOCATIONS = (DEFAULT_STREAM, )
 TRACE_LEVEL_VALUE = 5
 TRACE_LEVEL_NAME = "TRACE"
 CUSTOM_LEVELS = {TRACE_LEVEL_NAME: TRACE_LEVEL_VALUE}
-SILENCE_LOGS_OPTNAME = "silent"
-VERBOSITY_OPTNAME = "verbosity"
-DEVMODE_OPTNAME = "logdev"
-PARAM_BY_OPTNAME = {DEVMODE_OPTNAME: "devmode"}
+SILENCE_LOGS_OPTNAME = "--silent"
+VERBOSITY_OPTNAME = "--verbosity"
+DEVMODE_OPTNAME = "--logdev"
+PARAM_BY_OPTNAME = {DEVMODE_OPTNAME: "--devmode"}
 
 # Translation of verbosity into logging level.
 # Log message count monotonically increases in verbosity while it decreases
@@ -62,7 +62,7 @@ def add_logging_options(parser):
         package's logging options.
     """
     for optname, optdata in LOGGING_CLI_OPTDATA.items():
-        parser.add_argument("--{}".format(optname), **optdata)
+        parser.add_argument("{}".format(optname), **optdata)
     return parser
 
 

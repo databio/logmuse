@@ -3,10 +3,23 @@ import sys
 from setuptools import setup
 
 PKG = "logmuse"
+REQDIR = "requirements"
+
+
+def read_reqs(reqs_name):
+    deps = []
+    depsfile = os.path.join(REQDIR, "requirements-{}.txt".format(reqs_name))
+    with open(depsfile, 'r') as f:
+        for l in f:
+            if not l.strip():
+                continue
+            deps.append(l)
+    return deps
+
 
 # Additional keyword arguments for setup().
 extra = {}
-DEPENDENCIES = []
+DEPENDENCIES = read_reqs("all")
 
 # 2to3
 if sys.version_info >= (3, ):
@@ -44,6 +57,9 @@ setup(
     license="BSD2",
     scripts=None,
     include_package_data=True,
+    test_suite="tests",
+    tests_require=read_reqs("dev"),
+    setup_requires=(["pytest-runner"] if {"test", "pytest", "ptr"} & set(sys.argv) else []),
     **extra
 )
 
