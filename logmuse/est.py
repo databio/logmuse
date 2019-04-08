@@ -177,10 +177,10 @@ def setup_logger(
         return logger
 
     # Determine the logger's listening level.
-    if level and verbosity:
+    if level is not None and verbosity is not None:
         raise ValueError("Cannot specify both level and verbosity; got {} and "
                          "{}, respectively".format(level, verbosity))
-    elif level:
+    elif level is not None:
         # Handle int- or text-specific logging level.
         try:
             level = int(level)
@@ -224,9 +224,10 @@ def setup_logger(
         handlers.append(logging.StreamHandler(stream_loc))
 
     fine = level <= logging.DEBUG
-    def get_fmt(hdlr):
-        return BASIC_LOGGING_FORMAT if plain_format or not \
-            (devmode or fine or isinstance(hdlr, logging.FileHandler)) else DEV_LOGGING_FMT
+    get_fmt = (lambda _: fmt) if fmt else (
+        lambda hdlr: BASIC_LOGGING_FORMAT if plain_format or not
+            (devmode or fine or isinstance(hdlr, logging.FileHandler)) else
+        DEV_LOGGING_FMT)
 
     for h in handlers:
         h.setFormatter(logging.Formatter(get_fmt(h), datefmt=datefmt))
