@@ -44,6 +44,7 @@ setup(
     version=version,
     description="Logging setup",
     long_description=long_description,
+    long_description_content_type='text/markdown', 
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: BSD License",
