@@ -3,7 +3,6 @@ site_url: http://code.databio.org/logmuse/
 repo_url: http://github.com/databio/logmuse
 
 nav:
-  - Introduction: README.md
   - Reference:
     - API: autodoc_build/logmuse.md
     - Support: support.md
