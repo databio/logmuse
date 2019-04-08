@@ -169,7 +169,7 @@ def setup_logger(
     # Establish the logger.
     logger = logging.getLogger(name)
     logger.handlers = []
-    logger.propagate = propagate and not make_root
+    logger.propagate = propagate
 
     # Either short-circuit with a silent logger or parse and set level.
     if silent:

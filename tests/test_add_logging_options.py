@@ -55,6 +55,13 @@ def get_act_use(p, act):
 
 
 def _build_action_usage(act_kind):
+    """
+    Determine function to create command chunks needed to test action.
+
+    :param type act_kind:
+    :return function(argparse._StoreAction) -> list[str]: function that when
+        given a CLI action will create the representative command line chunks
+    """
     strategies = [
         ((argparse._StoreTrueAction, argparse._StoreFalseAction),
          lambda a: [a.option_strings[0]]),
@@ -80,9 +87,11 @@ def _get_optnames(p):
 
 
 def _random_chars_option():
+    """ Randomly generate arbitrary text value for use as CLI opt argument. """
     pool = string.ascii_letters + string.digits
     return "".join(random.choice(pool) for _ in range(10))
 
 
 def _get_opt_first_name(a):
+    """ Get the first of an action's option names. """
     return a.option_strings[0]
