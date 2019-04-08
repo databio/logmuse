@@ -217,7 +217,7 @@ def setup_logger(
                 stream_loc = STREAMS[stream.upper()]
             except (AttributeError, KeyError):
                 # Fall back on default stream since
-                # arguments indicate that one should be activate.
+                # arguments indicate that one should be activated.
                 print("Invalid stream location: {}; using {}".
                       format(stream, DEFAULT_STREAM))
                 stream_loc = DEFAULT_STREAM

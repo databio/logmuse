@@ -2,6 +2,8 @@
 
 import itertools
 import logging
+import random
+import string
 import sys
 import pytest
 from logmuse import setup_logger
@@ -9,6 +11,11 @@ from logmuse.est import DEFAULT_STREAM, LOGGING_LEVEL, PACKAGE_NAME
 
 __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
+
+
+def _random_filename():
+    """ Generate random extensionless filename. """
+    return "".join(random.choice(string.ascii_letters) for _ in range(20))
 
 
 @pytest.mark.parametrize(
@@ -75,22 +82,39 @@ def test_propagate(kwargs, exp):
     assert setup_logger(**kwargs).propagate is exp
 
 
-@pytest.mark.skip("not implemented")
-def test_stream():
+@pytest.mark.parametrize(
+    ["stream", "exp"],
+    [(sys.stdout, sys.stdout), (sys.stderr, sys.stderr),
+     ("not_a_real_stream", DEFAULT_STREAM)])
+def test_stream(stream, exp):
     """ Validate stream handler setting for created logger. """
-    pass
+    log = setup_logger(stream=stream)
+    assert 1 == len(log.handlers)
+    h = _check_hdlr_kind(log, logging.StreamHandler)
+    assert exp == h.stream
 
 
-@pytest.mark.skip("not implemented")
-def test_logfile():
+@pytest.mark.parametrize("filename", [_random_filename() for _ in range(2)])
+def test_logfile(tmpdir, filename):
     """ Validate file handler setting for created logger. """
-    pass
+    fp = tmpdir.join(filename).strpath
+    log = setup_logger(logfile=fp)
+    assert 1 == len(log.handlers)
+    h = _check_hdlr_kind(log, logging.FileHandler)
+    assert fp == h.stream.name
 
 
-@pytest.mark.skip("not implemented")
-def test_logfile_and_stream():
+@pytest.mark.parametrize("filename", [_random_filename() for _ in range(2)])
+@pytest.mark.parametrize("stream", [sys.stdout, sys.stderr])
+def test_logfile_and_stream(filename, stream, tmpdir):
     """ Logging can be both stream and file. """
-    pass
+    fp = tmpdir.join(filename).strpath
+    log = setup_logger(logfile=fp, stream=stream)
+    assert 2 == len(log.handlers)
+    fh = _check_hdlr_kind(log, logging.FileHandler)
+    sh = _check_hdlr_kind(log, logging.StreamHandler, omit=logging.FileHandler)
+    assert fp == fh.stream.name
+    assert stream == sh.stream
 
 
 def _check_handler(h, lev=None, loc=None):
@@ -139,3 +163,13 @@ def _check_handler(h, lev=None, loc=None):
             fails.append("Unexpected handler location; expected {} but found {}".
                          format(exp_name, obs_name))
     return fails
+
+
+def _check_hdlr_kind(l, k, omit=None):
+    use1 = lambda hdlr: isinstance(hdlr, k)
+    use2 = (lambda _: True) if omit is None else \
+        (lambda hdlr: not isinstance(hdlr, omit))
+    hs = [h for h in l.handlers if use1(h) and use2(h)]
+    assert 1 == len(hs), "Expected exactly 1 handler of type {} but " \
+                         "found {}".format(k, len(hs))
+    return hs[0]
