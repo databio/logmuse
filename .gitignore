@@ -67,4 +67,5 @@ Thumbs.db
 # Build-related stuff
 build/
 dist/
+logmuse.egg-info/
 
