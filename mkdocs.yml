@@ -1,0 +1,21 @@
+site_name: Logmuse
+site_url: http://code.databio.org/logmuse/
+repo_url: http://github.com/databio/logmuse
+
+nav:
+  - Introduction: README.md
+  - Reference:
+    - API: autodoc_build/logmuse.md
+    - Support: support.md
+    - Contributing: contributing.md
+    - Changelog: changelog.md
+
+theme: databio
+
+plugins:
+  - databio:
+      autodoc_build: "docs/autodoc_build"
+      autodoc_package: "logmuse"
+      no_top_level: true
+  - search
+
