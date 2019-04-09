@@ -11,7 +11,7 @@ install:
   - pip install -r requirements/requirements-dev.txt
   - pip install -r requirements/requirements-test.txt
 
-script: pytest --cov=peppy
+script: pytest --cov=logmuse
 after_success:
   - coveralls
 
