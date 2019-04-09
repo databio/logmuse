@@ -1,5 +1,8 @@
 # Changelog
 
-## *v0.20* (2019-04-08):
+## *v0.0.1* (2019-04-09):
+- Fixed a bug preventing installation
+
+## *v0.0* (2019-04-08):
 - Initial release
 
