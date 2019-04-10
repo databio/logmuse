@@ -233,8 +233,8 @@ def setup_logger(
         h.setFormatter(logging.Formatter(get_fmt(h), datefmt=datefmt))
         h.setLevel(level)
         logger.addHandler(h)
-    logger.info("Configured logger '%s' using %s v%s",
-                logger.name, PACKAGE_NAME, __version__)
+    logger.debug("Configured logger '%s' using %s v%s",
+                 logger.name, PACKAGE_NAME, __version__)
 
     return logger
 
