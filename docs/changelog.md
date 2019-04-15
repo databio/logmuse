@@ -1,6 +1,6 @@
 # Changelog
 
-## *Unreleased*
+## *v0.0.2* (2019-04-14):
 ### Changed
 - Lessen level of some messages
 ### Fixed
