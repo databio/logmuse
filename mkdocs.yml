@@ -1,6 +1,7 @@
 site_name: Logmuse
 site_url: http://code.databio.org/logmuse/
 repo_url: http://github.com/databio/logmuse
+pypi_name: logmuse
 
 nav:
   - Introduction:
