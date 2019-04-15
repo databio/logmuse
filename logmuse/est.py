@@ -31,7 +31,7 @@ CUSTOM_LEVELS = {TRACE_LEVEL_NAME: TRACE_LEVEL_VALUE}
 SILENCE_LOGS_OPTNAME = "--silent"
 VERBOSITY_OPTNAME = "--verbosity"
 DEVMODE_OPTNAME = "--logdev"
-PARAM_BY_OPTNAME = {DEVMODE_OPTNAME: "--devmode"}
+PARAM_BY_OPTNAME = {DEVMODE_OPTNAME: "devmode"}
 
 # Translation of verbosity into logging level.
 # Log message count monotonically increases in verbosity while it decreases
@@ -88,15 +88,16 @@ def logger_via_cli(opts, **kwargs):
     # Once translation's done (if needed), parse out the
     logs_cli_args = {}
     for optname in LOGGING_CLI_OPTDATA.keys():
+        name = optname.lstrip("-")
         # Client must add the expected options, via the API or otherwise.
         try:
-            optval = getattr(opts, optname)
+            optval = getattr(opts, name)
         except AttributeError:
             raise AbsentOptionException(optname)
         else:
             # Translate the option name if needed (i.e., for discordance
             # between the CLI version and the logger setup signature).
-            logs_cli_args[PARAM_BY_OPTNAME.get(optname, optname)] = optval
+            logs_cli_args[PARAM_BY_OPTNAME.get(optname, name)] = optval
     logs_cli_args.update(kwargs)
     return setup_logger(**logs_cli_args)
 
@@ -233,8 +234,8 @@ def setup_logger(
         h.setFormatter(logging.Formatter(get_fmt(h), datefmt=datefmt))
         h.setLevel(level)
         logger.addHandler(h)
-    logger.info("Configured logger '%s' using %s v%s",
-                logger.name, PACKAGE_NAME, __version__)
+    logger.debug("Configured logger '%s' using %s v%s",
+                 logger.name, PACKAGE_NAME, __version__)
 
     return logger
 
