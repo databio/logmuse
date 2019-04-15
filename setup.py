@@ -19,12 +19,11 @@ def read_reqs(reqs_name):
 
 # Additional keyword arguments for setup().
 extra = {}
-DEPENDENCIES = read_reqs("all")
 
 # 2to3
 if sys.version_info >= (3, ):
     extra["use_2to3"] = True
-extra["install_requires"] = DEPENDENCIES
+extra["install_requires"] = []
 
 with open(os.path.join(PKG, "_version.py"), 'r') as versionfile:
     version = versionfile.readline().split()[-1].strip("\"'\n")

@@ -1,4 +1,0 @@
-mkdocs
-markdown-include
-pydoc-markdown
-
