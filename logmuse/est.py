@@ -81,7 +81,6 @@ def logger_via_cli(opts, **kwargs):
         isn't available in the given Namespace. Such a case suggests that a
         client application didn't use this module to add the expected logging
         options to a parser.
-
     """
     # Within the key, translate the option name if needed. If it's not
     # present within the translations mapping, use the original optname.

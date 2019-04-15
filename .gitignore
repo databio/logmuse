@@ -62,6 +62,7 @@ Thumbs.db
 # pytest-related
 .cache/
 .coverage
+.hypothesis/
 .pytest_cache/
 
 # Build-related stuff
