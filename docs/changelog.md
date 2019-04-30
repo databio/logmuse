@@ -1,5 +1,9 @@
 # Changelog
 
+## *v0.1* (2019-04-30):
+### Added
+- Parameter to `setup_logger` to pass argument to `style` parameter of `logging.Formatter`
+
 ## *v0.0.2* (2019-04-14):
 ### Changed
 - Lessen level of some messages

@@ -104,7 +104,7 @@ def logger_via_cli(opts, **kwargs):
 def setup_logger(
         name="", level=None, stream=None, logfile=None,
         make_root=None, propagate=False, silent=False, devmode=False,
-        verbosity=None, fmt=None, datefmt=None, plain_format=False):
+        verbosity=None, fmt=None, datefmt=None, plain_format=False, style=None):
     """
     Establish and configure primary logger.
 
@@ -145,6 +145,9 @@ def setup_logger(
     :param str datefmt: format/template for time component of a log record.
     :param bool plain_format: force use of plain message format, even if
         in development mode (debug level)
+    :param str style: string indicating message formatting strategy; refer to
+        https://docs.python.org/3/howto/logging-cookbook.html#use-of-alternative-formatting-styles;
+        only valid in Python3.2+
     :return logging.Logger: configured Logger instance
     :raise ValueError: if attempting to name explicitly non-root logger with
         a root name, or if both level and verbosity are specified
@@ -229,8 +232,18 @@ def setup_logger(
             (devmode or fine or isinstance(hdlr, logging.FileHandler)) else
         DEV_LOGGING_FMT)
 
+    fmt_kwargs = {"datefmt": datefmt}
+    if style:
+        vers = sys.version_info
+        if vers < (3, 2):
+            logging.warning(
+                "Insufficient Python version to specify logging format style: "
+                "{}.{}.{}".format(vers.major, vers.minor, vers.micro))
+        else:
+            fmt_kwargs["style"] = style
+
     for h in handlers:
-        h.setFormatter(logging.Formatter(get_fmt(h), datefmt=datefmt))
+        h.setFormatter(logging.Formatter(get_fmt(h), **fmt_kwargs))
         h.setLevel(level)
         logger.addHandler(h)
     logger.debug("Configured logger '%s' using %s v%s",
