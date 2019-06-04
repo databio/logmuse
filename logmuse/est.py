@@ -46,6 +46,7 @@ LOGGING_CLI_OPTDATA = {
         "action": "store_true",
         "help": "Silence logging. Overrides {}.".format(VERBOSITY_OPTNAME)},
     VERBOSITY_OPTNAME: {
+        "metavar": "V",
         "help": "Set logging level (integer from 0-5 or Python builtin)"},
     DEVMODE_OPTNAME: {
         "action": "store_true",
