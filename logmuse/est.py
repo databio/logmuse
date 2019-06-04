@@ -10,16 +10,14 @@ local level, but this will at least provide a foundation.
 import logging
 import os
 import sys
+import warnings
 from ._version import __version__
 
 __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
 
-__all__ = ["add_logging_options", 
-            "logger_via_cli",
-            "setup_logger",
-            "init_logger",
-            "AbsentOptionException"]
+__all__ = ["add_logging_options", "logger_via_cli", "init_logger",
+           "setup_logger", "AbsentOptionException"]
 
 
 BASIC_LOGGING_FORMAT = "%(message)s"
@@ -45,7 +43,8 @@ LEVEL_BY_VERBOSITY = ["CRITICAL", "ERROR", _WARN_REPR, "INFO", "DEBUG"]
 
 LOGGING_CLI_OPTDATA = {
     SILENCE_LOGS_OPTNAME: {
-        "action": "store_true", "help": "Silence logging. Overrides --verbosity."},
+        "action": "store_true",
+        "help": "Silence logging. Overrides {}.".format(VERBOSITY_OPTNAME)},
     VERBOSITY_OPTNAME: {
         "help": "Set logging level (integer from 0-5 or Python builtin)"},
     DEVMODE_OPTNAME: {
@@ -100,18 +99,7 @@ def logger_via_cli(opts, **kwargs):
             # between the CLI version and the logger setup signature).
             logs_cli_args[PARAM_BY_OPTNAME.get(optname, name)] = optval
     logs_cli_args.update(kwargs)
-    return setup_logger(**logs_cli_args)
-
-def setup_logger(
-        name="", level=None, stream=None, logfile=None,
-        make_root=None, propagate=False, silent=False, devmode=False,
-        verbosity=None, fmt=None, datefmt=None, plain_format=False, style=None):
-    """
-    Old alias for init_logger for backwards compatibility
-    """
-    return init_logger(name, level, stream, logfile,
-        make_root, propagate, silent, devmode,
-        verbosity, fmt, datefmt, plain_format, style)
+    return init_logger(**logs_cli_args)
 
 
 def init_logger(
@@ -263,6 +251,18 @@ def init_logger(
                  logger.name, PACKAGE_NAME, __version__)
 
     return logger
+
+
+def setup_logger(
+        name="", level=None, stream=None, logfile=None,
+        make_root=None, propagate=False, silent=False, devmode=False,
+        verbosity=None, fmt=None, datefmt=None, plain_format=False, style=None):
+    """ Old alias for init_logger for backwards compatibility """
+    warnings.warn("Please use init_logger in place of setup_logger",
+                  DeprecationWarning)
+    return init_logger(
+        name, level, stream, logfile, make_root, propagate,
+        silent, devmode, verbosity, fmt, datefmt, plain_format, style)
 
 
 def _level_from_verbosity(verbosity):
