@@ -1,4 +1,4 @@
-"""Project configuration, particularly for logging.
+"""Project logging configuration.
 
 Project-scope constants may reside here, but more importantly, some setup here
 will provide a logging infrastructure for all of the project's modules.
@@ -10,12 +10,14 @@ local level, but this will at least provide a foundation.
 import logging
 import os
 import sys
+import warnings
 from ._version import __version__
 
 __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
 
-__all__ = ["add_logging_options", "logger_via_cli", "setup_logger", "AbsentOptionException"]
+__all__ = ["add_logging_options", "logger_via_cli", "init_logger",
+           "setup_logger", "AbsentOptionException"]
 
 
 BASIC_LOGGING_FORMAT = "%(message)s"
@@ -38,17 +40,23 @@ PARAM_BY_OPTNAME = {DEVMODE_OPTNAME: "devmode"}
 # in logging level, making verbosity a more intuitive specification mechanism.
 _WARN_REPR = "WARN"
 LEVEL_BY_VERBOSITY = ["CRITICAL", "ERROR", _WARN_REPR, "INFO", "DEBUG"]
+_MIN_VERBOSITY = 1
+_MAX_VERBOSITY = len(LEVEL_BY_VERBOSITY)
+_VERBOSITY_CHOICES = [str(x) for x in
+                      range(_MIN_VERBOSITY, len(LEVEL_BY_VERBOSITY) + 1)] + \
+                     LEVEL_BY_VERBOSITY + ["WARNING"]
 
 LOGGING_CLI_OPTDATA = {
     SILENCE_LOGS_OPTNAME: {
-        "action": "store_true", "help": "Silence logging"},
+        "action": "store_true",
+        "help": "Silence logging. Overrides {}.".format(VERBOSITY_OPTNAME)},
     VERBOSITY_OPTNAME: {
-        "help": "Relative measure of interest in logs; this can be an "
-                "integer in [0, 5], or a Python builtin logging name)"},
+        "metavar": "V", "choices": _VERBOSITY_CHOICES,
+        "help": "Set logging level ({}-{} or logging module level name)".
+            format(_MIN_VERBOSITY, len(LEVEL_BY_VERBOSITY))},
     DEVMODE_OPTNAME: {
         "action": "store_true",
-        "help": "Handle logging in development mode; perhaps among other "
-                "facets, make the format more information-rich."}
+        "help": "Expand content of logging message format."}
 }
 
 
@@ -98,10 +106,10 @@ def logger_via_cli(opts, **kwargs):
             # between the CLI version and the logger setup signature).
             logs_cli_args[PARAM_BY_OPTNAME.get(optname, name)] = optval
     logs_cli_args.update(kwargs)
-    return setup_logger(**logs_cli_args)
+    return init_logger(**logs_cli_args)
 
 
-def setup_logger(
+def init_logger(
         name="", level=None, stream=None, logfile=None,
         make_root=None, propagate=False, silent=False, devmode=False,
         verbosity=None, fmt=None, datefmt=None, plain_format=False, style=None):
@@ -252,6 +260,18 @@ def setup_logger(
     return logger
 
 
+def setup_logger(
+        name="", level=None, stream=None, logfile=None,
+        make_root=None, propagate=False, silent=False, devmode=False,
+        verbosity=None, fmt=None, datefmt=None, plain_format=False, style=None):
+    """ Old alias for init_logger for backwards compatibility """
+    warnings.warn("Please use init_logger in place of setup_logger",
+                  DeprecationWarning)
+    return init_logger(
+        name, level, stream, logfile, make_root, propagate,
+        silent, devmode, verbosity, fmt, datefmt, plain_format, style)
+
+
 def _level_from_verbosity(verbosity):
     """
     Translation of verbosity into logging level.
@@ -279,10 +299,7 @@ def _level_from_verbosity(verbosity):
                 "{}".format(verbosity, ", ".join(LEVEL_BY_VERBOSITY)))
         return getattr(logging, v)
     elif isinstance(verbosity, int):
-        # Allow negative value to mute even ERROR level but not CRITICAL.
-        # Also handle excessively high verbosity request.
-        v = min(max(verbosity, 0), len(LEVEL_BY_VERBOSITY) - 1)
-        return LEVEL_BY_VERBOSITY[v]
+        return LEVEL_BY_VERBOSITY[verbosity - 1]    # 1-based user, 0-based internal
     else:
         raise TypeError("Verbosity must be string or int; got {} ({})"
                         .format(verbosity, type(verbosity)))

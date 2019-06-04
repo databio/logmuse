@@ -7,7 +7,8 @@ from hypothesis import given, strategies as st
 import pytest
 from logmuse import add_logging_options, logger_via_cli
 from logmuse.est import AbsentOptionException, LEVEL_BY_VERBOSITY, \
-    LOGGING_CLI_OPTDATA, SILENCE_LOGS_OPTNAME, VERBOSITY_OPTNAME
+    LOGGING_CLI_OPTDATA, SILENCE_LOGS_OPTNAME, VERBOSITY_OPTNAME, \
+    _MIN_VERBOSITY, _MAX_VERBOSITY
 
 __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
@@ -58,37 +59,34 @@ def test_silence(parser, cmdl, flag, hdlr_type):
     assert isinstance(hs[0], hdlr_type)
 
 
-@pytest.mark.parametrize("verbosity", list(range(5)))
+@pytest.mark.parametrize("verbosity", range(_MIN_VERBOSITY, _MAX_VERBOSITY + 1))
 def test_typical_verbosity(parser, verbosity):
     """ Typical verbosity specifications yield logger with expected level. """
     opts = parser.parse_args([VERBOSITY_OPTNAME, str(verbosity)])
     logger = logger_via_cli(opts)
-    exp = getattr(logging, LEVEL_BY_VERBOSITY[verbosity])
+    exp = getattr(logging, LEVEL_BY_VERBOSITY[verbosity - 1])
     _assert_level(logger, exp)
 
 
 @given(verbosity=st.integers(-sys.maxsize, -1))
 def test_negative_verbosity(parser, verbosity):
     """ Verbosity is pulled up to min logging level. """
-    opts = parser.parse_args([VERBOSITY_OPTNAME, str(verbosity)])
-    logger = logger_via_cli(opts)
-    _assert_level(logger, logging.CRITICAL)
+    with pytest.raises(SystemExit):
+        parser.parse_args([VERBOSITY_OPTNAME, str(verbosity)])
 
 
-@given(verbosity=st.integers(len(LEVEL_BY_VERBOSITY), sys.maxsize))
+@given(verbosity=st.integers(len(LEVEL_BY_VERBOSITY) + 1, sys.maxsize))
 def test_excess_verbosity(parser, verbosity):
     """ Verbosity saturates / maxes out. """
-    opts = parser.parse_args([VERBOSITY_OPTNAME, str(verbosity)])
-    logger = logger_via_cli(opts)
-    _assert_level(logger, logging.DEBUG)
+    with pytest.raises(SystemExit):
+        parser.parse_args([VERBOSITY_OPTNAME, str(verbosity)])
 
 
 @pytest.mark.parametrize("verbosity", ["a", "NOTALEVEL", 2.5])
 def test_invalid_verbosity_is_exceptional(parser, verbosity):
     """ Verbosity must be a valid level name or an integer. """
-    opts = parser.parse_args([VERBOSITY_OPTNAME, str(verbosity)])
-    with pytest.raises(Exception):
-        logger_via_cli(opts)
+    with pytest.raises(SystemExit):
+        parser.parse_args([VERBOSITY_OPTNAME, str(verbosity)])
 
 
 def _assert_level(log, lev):
