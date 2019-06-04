@@ -40,14 +40,20 @@ PARAM_BY_OPTNAME = {DEVMODE_OPTNAME: "devmode"}
 # in logging level, making verbosity a more intuitive specification mechanism.
 _WARN_REPR = "WARN"
 LEVEL_BY_VERBOSITY = ["CRITICAL", "ERROR", _WARN_REPR, "INFO", "DEBUG"]
+_MIN_VERBOSITY = 1
+_MAX_VERBOSITY = len(LEVEL_BY_VERBOSITY)
+_VERBOSITY_CHOICES = [str(x) for x in
+                      range(_MIN_VERBOSITY, len(LEVEL_BY_VERBOSITY) + 1)] + \
+                     LEVEL_BY_VERBOSITY + ["WARNING"]
 
 LOGGING_CLI_OPTDATA = {
     SILENCE_LOGS_OPTNAME: {
         "action": "store_true",
         "help": "Silence logging. Overrides {}.".format(VERBOSITY_OPTNAME)},
     VERBOSITY_OPTNAME: {
-        "metavar": "V", "choices": [str(x) for x in range(0, 6)] + LEVEL_BY_VERBOSITY + ["WARNING"],
-        "help": "Set logging level (0-5 or logging module level name)"},
+        "metavar": "V", "choices": _VERBOSITY_CHOICES,
+        "help": "Set logging level ({}-{} or logging module level name)".
+            format(_MIN_VERBOSITY, len(LEVEL_BY_VERBOSITY))},
     DEVMODE_OPTNAME: {
         "action": "store_true",
         "help": "Expand content of logging message format."}
@@ -293,10 +299,7 @@ def _level_from_verbosity(verbosity):
                 "{}".format(verbosity, ", ".join(LEVEL_BY_VERBOSITY)))
         return getattr(logging, v)
     elif isinstance(verbosity, int):
-        # Allow negative value to mute even ERROR level but not CRITICAL.
-        # Also handle excessively high verbosity request.
-        v = min(max(verbosity, 0), len(LEVEL_BY_VERBOSITY) - 1)
-        return LEVEL_BY_VERBOSITY[v]
+        return LEVEL_BY_VERBOSITY[verbosity - 1]    # 1-based user, 0-based internal
     else:
         raise TypeError("Verbosity must be string or int; got {} ({})"
                         .format(verbosity, type(verbosity)))
