@@ -1,4 +1,4 @@
-"""Project configuration, particularly for logging.
+"""Project logging configuration.
 
 Project-scope constants may reside here, but more importantly, some setup here
 will provide a logging infrastructure for all of the project's modules.
@@ -100,8 +100,19 @@ def logger_via_cli(opts, **kwargs):
     logs_cli_args.update(kwargs)
     return setup_logger(**logs_cli_args)
 
-
 def setup_logger(
+        name="", level=None, stream=None, logfile=None,
+        make_root=None, propagate=False, silent=False, devmode=False,
+        verbosity=None, fmt=None, datefmt=None, plain_format=False, style=None):
+    """
+    Old alias for init_logger for backwards compatibility
+    """
+    return init_logger(name, level, stream, logfile,
+        make_root, propagate, silent, devmode,
+        verbosity, fmt, datefmt, plain_format, style)
+
+
+def init_logger(
         name="", level=None, stream=None, logfile=None,
         make_root=None, propagate=False, silent=False, devmode=False,
         verbosity=None, fmt=None, datefmt=None, plain_format=False, style=None):
