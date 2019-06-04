@@ -12,6 +12,7 @@ __email__ = "vreuter@virginia.edu"
 
 
 def pytest_generate_tests(metafunc):
+    """ Generation and parameterization of tests in this module. """
     if "opt" in metafunc.fixturenames:
         metafunc.parametrize("opt", list(LOGGING_CLI_OPTDATA.keys()))
 
@@ -58,15 +59,20 @@ def _build_action_usage(act_kind):
     """
     Determine function to create command chunks needed to test action.
 
-    :param type act_kind:
+    :param type act_kind: the type of option action (e.g. StoreTrueAction)
     :return function(argparse._StoreAction) -> list[str]: function that when
         given a CLI action will create the representative command line chunks
     """
+    from logmuse.est import _VERBOSITY_CHOICES, VERBOSITY_OPTNAME
+    def get_general_use(act):
+        name = _get_opt_first_name(act)
+        arg = random.choice(_VERBOSITY_CHOICES) \
+            if name == VERBOSITY_OPTNAME else _random_chars_option()
+        return [name, arg]
     strategies = [
         ((argparse._StoreTrueAction, argparse._StoreFalseAction),
          lambda a: [a.option_strings[0]]),
-        ((argparse._StoreAction),
-         lambda a: [_get_opt_first_name(a), _random_chars_option()])
+        ((argparse._StoreAction), get_general_use)
     ]
     for kinds, strat in strategies:
         if issubclass(act_kind, kinds):
