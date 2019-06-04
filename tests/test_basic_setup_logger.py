@@ -6,7 +6,7 @@ import random
 import string
 import sys
 import pytest
-from logmuse import setup_logger
+from logmuse import init_logger
 from logmuse.est import DEFAULT_STREAM, LOGGING_LEVEL, PACKAGE_NAME
 
 __author__ = "Vince Reuter"
@@ -28,7 +28,7 @@ def _random_filename():
      ("handlers", lambda h: _check_handler(h, loc=DEFAULT_STREAM))])
 def test_all_defaults(attr, check):
     """ Check the values on the logger that result from all default arguments. """
-    logger = setup_logger()
+    logger = init_logger()
     if hasattr(check, "__call__"):
         fails = list(itertools.chain(*[check(obj) for obj in getattr(logger, attr)]))
         if fails:
@@ -51,20 +51,20 @@ def test_all_defaults(attr, check):
     [("level", x) for x in range(0, 50, 10)])
 def test_single_attr(att, val):
     """ Test successful setting of a simple, particular logger attribute. """
-    assert val == getattr(setup_logger(**{att: val}), att)
+    assert val == getattr(init_logger(**{att: val}), att)
 
 
 def test_make_non_root_name_root():
     """ Non-root name for root logger is prohibited. """
     with pytest.raises(ValueError):
-        setup_logger("root", make_root=False)
+        init_logger("root", make_root=False)
 
 
 @pytest.mark.parametrize(["make_root", "exp"],
     [(None, PACKAGE_NAME), (False, PACKAGE_NAME), (True, "root")])
 def test_make_root(make_root, exp):
     """ Root status for logger has a couple of implications. """
-    log = setup_logger(make_root=make_root)
+    log = init_logger(make_root=make_root)
     assert exp == log.name
     assert log.propagate is False
 
@@ -79,7 +79,7 @@ def test_make_root(make_root, exp):
      ({"make_root": True, "propagate": True}, True)])
 def test_propagate(kwargs, exp):
     """ Determination of propagation flag considers root status and propagation. """
-    assert setup_logger(**kwargs).propagate is exp
+    assert init_logger(**kwargs).propagate is exp
 
 
 @pytest.mark.parametrize(
@@ -88,7 +88,7 @@ def test_propagate(kwargs, exp):
      ("not_a_real_stream", DEFAULT_STREAM)])
 def test_stream(stream, exp):
     """ Validate stream handler setting for created logger. """
-    log = setup_logger(stream=stream)
+    log = init_logger(stream=stream)
     assert 1 == len(log.handlers)
     h = _check_hdlr_kind(log, logging.StreamHandler)
     assert exp == h.stream
@@ -98,7 +98,7 @@ def test_stream(stream, exp):
 def test_logfile(tmpdir, filename):
     """ Validate file handler setting for created logger. """
     fp = tmpdir.join(filename).strpath
-    log = setup_logger(logfile=fp)
+    log = init_logger(logfile=fp)
     assert 1 == len(log.handlers)
     h = _check_hdlr_kind(log, logging.FileHandler)
     assert fp == h.stream.name
@@ -109,7 +109,7 @@ def test_logfile(tmpdir, filename):
 def test_logfile_and_stream(filename, stream, tmpdir):
     """ Logging can be both stream and file. """
     fp = tmpdir.join(filename).strpath
-    log = setup_logger(logfile=fp, stream=stream)
+    log = init_logger(logfile=fp, stream=stream)
     assert 2 == len(log.handlers)
     fh = _check_hdlr_kind(log, logging.FileHandler)
     sh = _check_hdlr_kind(log, logging.StreamHandler, omit=logging.FileHandler)
