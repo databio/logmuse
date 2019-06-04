@@ -15,7 +15,11 @@ from ._version import __version__
 __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
 
-__all__ = ["add_logging_options", "logger_via_cli", "setup_logger", "AbsentOptionException"]
+__all__ = ["add_logging_options", 
+            "logger_via_cli",
+            "setup_logger",
+            "init_logger",
+            "AbsentOptionException"]
 
 
 BASIC_LOGGING_FORMAT = "%(message)s"
@@ -41,14 +45,12 @@ LEVEL_BY_VERBOSITY = ["CRITICAL", "ERROR", _WARN_REPR, "INFO", "DEBUG"]
 
 LOGGING_CLI_OPTDATA = {
     SILENCE_LOGS_OPTNAME: {
-        "action": "store_true", "help": "Silence logging"},
+        "action": "store_true", "help": "Silence logging. Overrides --verbosity."},
     VERBOSITY_OPTNAME: {
-        "help": "Relative measure of interest in logs; this can be an "
-                "integer in [0, 5], or a Python builtin logging name)"},
+        "help": "Set logging level (integer from 0-5 or Python builtin)"},
     DEVMODE_OPTNAME: {
         "action": "store_true",
-        "help": "Handle logging in development mode; perhaps among other "
-                "facets, make the format more information-rich."}
+        "help": "Expand content of logging message format."}
 }
 
 
