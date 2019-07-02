@@ -10,6 +10,7 @@ from logmuse.est import AbsentOptionException, LEVEL_BY_VERBOSITY, \
     LOGGING_CLI_OPTDATA, SILENCE_LOGS_OPTNAME, VERBOSITY_OPTNAME, \
     _MIN_VERBOSITY, _MAX_VERBOSITY
 
+
 __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
 
@@ -21,14 +22,20 @@ def parser():
 
 
 @pytest.mark.parametrize("missing", list(LOGGING_CLI_OPTDATA.keys()))
-def test_opts_not_added(parser, missing):
+@pytest.mark.parametrize("strict", [False, True])
+def test_opts_not_added(parser, missing, strict):
     """ Special exception occurs when it appears that log opts are absent. """
     opts = parser.parse_args([])
     assert all(hasattr(opts, _rawopt(n)) for n in LOGGING_CLI_OPTDATA)
     delattr(opts, _rawopt(missing))
     assert not hasattr(opts, _rawopt(missing))
-    with pytest.raises(AbsentOptionException):
-        logger_via_cli(opts)
+    def create_logger():
+        return logger_via_cli(opts, strict=strict)
+    if strict:
+        with pytest.raises(AbsentOptionException):
+            create_logger()
+    else:
+        assert isinstance(create_logger(), logging.Logger)
 
 
 def test_repeat_parser_configuration_is_exceptional(parser):

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1] -- (2019-07-02)
+### Added
+- Control for strictness of requirement for client code to have called `add_logging_options` when 
+prior to using `logger_via_cli`
+### Fixed
+- Remove erroneous printing of invalid stream location message.
+
 ## [0.2.0] -- (2019-06-02)
 
 ### Changed

@@ -74,7 +74,7 @@ def add_logging_options(parser):
     return parser
 
 
-def logger_via_cli(opts, **kwargs):
+def logger_via_cli(opts, strict=True, **kwargs):
     """
     Convenience function creating a logger.
 
@@ -84,11 +84,12 @@ def logger_via_cli(opts, **kwargs):
     lack of burden, parsing values for the options supplied herein.
 
     :param argparse.Namespace opts: command-line options/arguments.
+    :param bool strict: whether to raise an exception
     :return logging.Logger: configured logger instance.
     :raise pararead.logs.AbsentOptionException: if one of the expected options
-        isn't available in the given Namespace. Such a case suggests that a
-        client application didn't use this module to add the expected logging
-        options to a parser.
+        isn't available in the given Namespace, and the argument to the strict
+        parameter is True. Such a case suggests that a client application
+        didn't use this module to add the expected logging options to a parser.
     """
     # Within the key, translate the option name if needed. If it's not
     # present within the translations mapping, use the original optname.
@@ -100,7 +101,9 @@ def logger_via_cli(opts, **kwargs):
         try:
             optval = getattr(opts, name)
         except AttributeError:
-            raise AbsentOptionException(optname)
+            if strict:
+                raise AbsentOptionException(optname)
+            continue
         else:
             # Translate the option name if needed (i.e., for discordance
             # between the CLI version and the logger setup signature).
@@ -218,9 +221,10 @@ def init_logger(
         # Create and add the handler, overwriting rather than appending.
         handlers.append(logging.FileHandler(logfile, mode='w'))
     if stream or not logfile:
-        stream = stream or DEFAULT_STREAM
-        # Deal with possible argument types.
-        if stream in [sys.stderr, sys.stdout]:
+        if not stream:
+            stream = DEFAULT_STREAM
+            stream_loc = stream
+        elif stream in [sys.stderr, sys.stdout]:
             stream_loc = stream
         else:
             try:
