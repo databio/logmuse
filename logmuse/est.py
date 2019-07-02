@@ -218,9 +218,10 @@ def init_logger(
         # Create and add the handler, overwriting rather than appending.
         handlers.append(logging.FileHandler(logfile, mode='w'))
     if stream or not logfile:
-        stream = stream or DEFAULT_STREAM
-        # Deal with possible argument types.
-        if stream in [sys.stderr, sys.stdout]:
+        if not stream:
+            stream = DEFAULT_STREAM
+            stream_loc = stream
+        elif stream in [sys.stderr, sys.stdout]:
             stream_loc = stream
         else:
             try:

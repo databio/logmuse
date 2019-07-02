@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.1] -- (Unreleased)
+
+### Fixed
+- Remove erroneous printing of invalid stream location message.
+
 ## [0.2.0] -- (2019-06-02)
 
 ### Changed
