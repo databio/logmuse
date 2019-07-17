@@ -6,6 +6,7 @@ pypi_name: logmuse
 nav:
   - Introduction:
     - Home: README.md
+    - Interactive logmuse: interactive.md
   - Reference:
     - API: autodoc_build/logmuse.md
     - Support: support.md
