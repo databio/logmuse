@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.3] -- (2019-07-29)
+- Add documentation
+- Fix readme display
+- Tweak variable names
+
 ## [0.2.1] -- (2019-07-02)
 ### Added
 - Control for strictness of requirement for client code to have called `add_logging_options` when 
