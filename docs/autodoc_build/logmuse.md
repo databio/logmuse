@@ -34,6 +34,42 @@ Exception subtype suggesting that client should add log options.
 
 
 ```python
+def logger_via_cli(opts, strict=True, **kwargs)
+```
+
+Convenience function creating a logger.
+
+This module provides the ability to augment a CLI parser with
+logging-related options/arguments so that client applications do not need
+intimate knowledge of the implementation. This function completes that
+lack of burden, parsing values for the options supplied herein.
+#### Parameters:
+
+- `opts` (`argparse.Namespace`):  command-line options/arguments.
+- `strict` (`bool`):  whether to raise an exception
+
+
+#### Returns:
+
+- `logging.Logger`:  configured logger instance.
+
+
+#### Raises:
+
+- `pararead.logs.AbsentOptionException`:  if one of the expected optionsisn't available in the given Namespace, and the argument to the strict parameter is True. Such a case suggests that a client application didn't use this module to add the expected logging options to a parser.
+
+
+
+
+```python
+def setup_logger(name='', level=None, stream=None, logfile=None, make_root=None, propagate=False, silent=False, devmode=False, verbosity=None, fmt=None, datefmt=None, plain_format=False, style=None)
+```
+
+Old alias for init_logger for backwards compatibility
+
+
+
+```python
 def init_logger(name='', level=None, stream=None, logfile=None, make_root=None, propagate=False, silent=False, devmode=False, verbosity=None, fmt=None, datefmt=None, plain_format=False, style=None)
 ```
 
@@ -84,42 +120,6 @@ Augment a CLI argument parser with this package's logging options.
 #### Returns:
 
 - `argparse.ArgumentParser`:  the input argument, supplemented with thispackage's logging options.
-
-
-
-
-```python
-def setup_logger(name='', level=None, stream=None, logfile=None, make_root=None, propagate=False, silent=False, devmode=False, verbosity=None, fmt=None, datefmt=None, plain_format=False, style=None)
-```
-
-Old alias for init_logger for backwards compatibility
-
-
-
-```python
-def logger_via_cli(opts, strict=True, **kwargs)
-```
-
-Convenience function creating a logger.
-
-This module provides the ability to augment a CLI parser with
-logging-related options/arguments so that client applications do not need
-intimate knowledge of the implementation. This function completes that
-lack of burden, parsing values for the options supplied herein.
-#### Parameters:
-
-- `opts` (`argparse.Namespace`):  command-line options/arguments.
-- `strict` (`bool`):  whether to raise an exception
-
-
-#### Returns:
-
-- `logging.Logger`:  configured logger instance.
-
-
-#### Raises:
-
-- `pararead.logs.AbsentOptionException`:  if one of the expected optionsisn't available in the given Namespace, and the argument to the strict parameter is True. Such a case suggests that a client application didn't use this module to add the expected logging options to a parser.
 
 
 

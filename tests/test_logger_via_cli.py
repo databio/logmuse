@@ -15,6 +15,8 @@ __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
 
 
+VERBOSITY_OPTNAME = "--" + VERBOSITY_OPTNAME
+
 @pytest.fixture
 def parser():
     """ Update empty argument parser with standard logging options. """
@@ -54,7 +56,7 @@ def test_opts_added_none_used(parser):
 
 @pytest.mark.parametrize(
     ["cmdl", "flag", "hdlr_type"],
-    [([SILENCE_LOGS_OPTNAME], True, logging.NullHandler),
+    [(["--" + SILENCE_LOGS_OPTNAME], True, logging.NullHandler),
      ([], False, logging.StreamHandler)])
 def test_silence(parser, cmdl, flag, hdlr_type):
     """ Log silencing generates a null handler. """

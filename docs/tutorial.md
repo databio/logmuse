@@ -1,6 +1,17 @@
 # Tutorial
 
-All you gotta do is: 
+## Client packages
+
+All you gotta do is: follow the norm using basic logging. No need to use logmuse. Just type:
+
+FOr example, something like:
+
+```
+_LOGGER = logging.getLogger(__name__)
+```
+
+At the top of each module, and then use `_LOGGER.debug` or whatever in the module. Now, to attach these to a CLI, all you gotta do is: 
+
 
 ## 1 Initialize
 
@@ -14,6 +25,7 @@ logmuse.init_logger(PACKAGE)
 
 Where `PACKAGE` is the name of your package. Now it will be set up with default parameters for your within-python-use.
 
+**Do not add this code to client packages that do not implement CLIs. This is only for the CLI package**.
 
 
 ## 2 Add CLI args
@@ -40,14 +52,13 @@ At the top of your module file, say:
 
 ```
 import logmuse
-_LOGGER = logging.getLogger(__name__)
 ```
 
 In your `main` function say:
 
 ```
 global _LOGGER
-_LOGGER = logmuse.logger_via_cli(args)
+_LOGGER = logmuse.logger_via_cli(args, make_root=True)
 ```
 
 Here, `args` is the result of argparse.parse_args().
@@ -57,6 +68,18 @@ Here, `args` is the result of argparse.parse_args().
 Say you have one package that uses logmuse and you want to link a logger from
 another package so that the CLI arguments can control the imported package.
 
+Not much you gotta do. Just do the above. that's it. Make sure your package isn't making a root logger or something silly like that.
+
+Since we're initiating a root logger here that has the CLI, and all the others should propogate, their messages should get handled according to the settings of the root logger.
+
+
+
+
+
+
+
+
+Old way:
 ```
 # Set the logging level.
 if args.dbg:

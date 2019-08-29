@@ -21,7 +21,8 @@ __all__ = ["add_logging_options", "logger_via_cli", "init_logger",
 
 
 BASIC_LOGGING_FORMAT = "%(message)s"
-DEV_LOGGING_FMT = "[%(asctime)s] {%(name)s:%(lineno)d} (%(funcName)s) [%(levelname)s] > %(message)s "
+DEV_LOGGING_FMT = "%(levelname).4s %(asctime)s | %(name)s:%(module)s:%(lineno)d > %(message)s "
+DEFAULT_DATE_FMT = "%H:%M:%S"
 PACKAGE_NAME = "logmuse"
 STREAMS = {"OUT": sys.stdout, "ERR": sys.stderr}
 DEFAULT_STREAM = STREAMS["ERR"]
@@ -115,7 +116,7 @@ def logger_via_cli(opts, strict=True, **kwargs):
 def init_logger(
         name="", level=None, stream=None, logfile=None,
         make_root=None, propagate=False, silent=False, devmode=False,
-        verbosity=None, fmt=None, datefmt=None, plain_format=False, style=None):
+        verbosity=None, fmt=None, datefmt=DEFAULT_DATE_FMT, plain_format=False, style=None):
     """
     Establish and configure primary logger.
 
