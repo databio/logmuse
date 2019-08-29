@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.3] -- (2019-07-29)
+## [0.2.4] -- (2019-07-29)
 - Add documentation
 - Fix readme display
 - Tweak variable names
