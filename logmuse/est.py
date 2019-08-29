@@ -17,11 +17,12 @@ __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
 
 __all__ = ["add_logging_options", "logger_via_cli", "init_logger",
-           "setup_logger", "AbsentOptionException"]
+           "setup_logger", "AbsentOptionException", "LOGGING_CLI_OPTDATA"]
 
 
 BASIC_LOGGING_FORMAT = "%(message)s"
-DEV_LOGGING_FMT = "[%(asctime)s] {%(name)s:%(lineno)d} (%(funcName)s) [%(levelname)s] > %(message)s "
+DEV_LOGGING_FMT = "%(levelname).4s %(asctime)s | %(name)s:%(module)s:%(lineno)d > %(message)s "
+DEFAULT_DATE_FMT = "%H:%M:%S"
 PACKAGE_NAME = "logmuse"
 STREAMS = {"OUT": sys.stdout, "ERR": sys.stderr}
 DEFAULT_STREAM = STREAMS["ERR"]
@@ -30,9 +31,9 @@ LOGGING_LOCATIONS = (DEFAULT_STREAM, )
 TRACE_LEVEL_VALUE = 5
 TRACE_LEVEL_NAME = "TRACE"
 CUSTOM_LEVELS = {TRACE_LEVEL_NAME: TRACE_LEVEL_VALUE}
-SILENCE_LOGS_OPTNAME = "--silent"
-VERBOSITY_OPTNAME = "--verbosity"
-DEVMODE_OPTNAME = "--logdev"
+SILENCE_LOGS_OPTNAME = "silent"
+VERBOSITY_OPTNAME = "verbosity"
+DEVMODE_OPTNAME = "logdev"
 PARAM_BY_OPTNAME = {DEVMODE_OPTNAME: "devmode"}
 
 # Translation of verbosity into logging level.
@@ -70,7 +71,7 @@ def add_logging_options(parser):
         package's logging options.
     """
     for optname, optdata in LOGGING_CLI_OPTDATA.items():
-        parser.add_argument("{}".format(optname), **optdata)
+        parser.add_argument("--{}".format(optname), **optdata)
     return parser
 
 
@@ -115,7 +116,7 @@ def logger_via_cli(opts, strict=True, **kwargs):
 def init_logger(
         name="", level=None, stream=None, logfile=None,
         make_root=None, propagate=False, silent=False, devmode=False,
-        verbosity=None, fmt=None, datefmt=None, plain_format=False, style=None):
+        verbosity=None, fmt=None, datefmt=DEFAULT_DATE_FMT, plain_format=False, style=None):
     """
     Establish and configure primary logger.
 
@@ -317,3 +318,18 @@ class AbsentOptionException(Exception):
                 format(missing_optname, "{}.{}".format(
                         __name__, add_logging_options.__name__))
         super(AbsentOptionException, self).__init__(likely_reason)
+
+
+
+
+# Stolen from peppy. Probably need to make peppy/looper rely on this.
+def get_logger(name):
+    """
+    Return a logger with given name, equipped with custom method.
+
+    :param str name: name for the logger to get/create.
+    :return logging.Logger: named, custom logger instance.
+    """
+    l = logging.getLogger(name)
+    l.whisper = lambda msg, *args, **kwargs: l.log(5, msg, *args, **kwargs)
+    return l

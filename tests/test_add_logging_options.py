@@ -14,7 +14,7 @@ __email__ = "vreuter@virginia.edu"
 def pytest_generate_tests(metafunc):
     """ Generation and parameterization of tests in this module. """
     if "opt" in metafunc.fixturenames:
-        metafunc.parametrize("opt", list(LOGGING_CLI_OPTDATA.keys()))
+        metafunc.parametrize("opt", list(["--" + x for x in LOGGING_CLI_OPTDATA.keys()]))
 
 
 def test_all_options_are_added(parser, opt):
@@ -24,7 +24,7 @@ def test_all_options_are_added(parser, opt):
     assert opt in _get_optnames(parser)
 
 
-def test_each_option_is_functional(parser, opt):
+def test_each_option_gis_functional(parser, opt):
     """ Each added CLI opt can be used as expected. """
     add_logging_options(parser)
     for a in parser._actions:
@@ -67,7 +67,7 @@ def _build_action_usage(act_kind):
     def get_general_use(act):
         name = _get_opt_first_name(act)
         arg = random.choice(_VERBOSITY_CHOICES) \
-            if name == VERBOSITY_OPTNAME else _random_chars_option()
+            if name == "--" + VERBOSITY_OPTNAME else _random_chars_option()
         return [name, arg]
     strategies = [
         ((argparse._StoreTrueAction, argparse._StoreFalseAction),
