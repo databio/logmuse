@@ -1,8 +1,18 @@
 # Changelog
 
+## [0.2.5] -- (2019-11-01)
+### Added
+- license file
+
+
 ## [0.2.4] -- (2019-07-29)
+### Added
 - Add documentation
+
+### Fixed
 - Fix readme display
+
+### Changed
 - Tweak variable names
 
 ## [0.2.1] -- (2019-07-02)
