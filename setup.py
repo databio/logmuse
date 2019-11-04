@@ -54,7 +54,7 @@ setup(
     keywords="logging, workflow, logger, logs",
     url="https://github.com/databio/{}/".format(PKG),
     author=u"Vince Reuter, Nathan Sheffield",
-    license="BSD2",
+    license="BSD-2-Clause",
     scripts=None,
     include_package_data=True,
     test_suite="tests",
