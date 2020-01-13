@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Added
+- Parameter in `init_logger` to use complete level names in fuller message format
+
 ## [0.2.5] -- (2019-11-01)
 ### Added
 - license file
