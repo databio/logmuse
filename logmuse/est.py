@@ -22,6 +22,7 @@ __all__ = ["add_logging_options", "logger_via_cli", "init_logger",
 
 BASIC_LOGGING_FORMAT = "%(message)s"
 DEV_LOGGING_FMT = "%(levelname).4s %(asctime)s | %(name)s:%(module)s:%(lineno)d > %(message)s "
+FULL_DEV_LOGGING_FMT = "%(levelname)s %(asctime)s | %(name)s:%(module)s:%(lineno)d > %(message)s "
 DEFAULT_DATE_FMT = "%H:%M:%S"
 PACKAGE_NAME = "logmuse"
 STREAMS = {"OUT": sys.stdout, "ERR": sys.stderr}
@@ -116,7 +117,8 @@ def logger_via_cli(opts, strict=True, **kwargs):
 def init_logger(
         name="", level=None, stream=None, logfile=None,
         make_root=None, propagate=False, silent=False, devmode=False,
-        verbosity=None, fmt=None, datefmt=DEFAULT_DATE_FMT, plain_format=False, style=None):
+        verbosity=None, fmt=None, datefmt=DEFAULT_DATE_FMT, plain_format=False,
+        style=None, use_full_names=False):
     """
     Establish and configure primary logger.
 
@@ -160,6 +162,7 @@ def init_logger(
     :param str style: string indicating message formatting strategy; refer to
         https://docs.python.org/3/howto/logging-cookbook.html#use-of-alternative-formatting-styles;
         only valid in Python3.2+
+    :param bool use_full_names: don't truncate level names
     :return logging.Logger: configured Logger instance
     :raise ValueError: if attempting to name explicitly non-root logger with
         a root name, or if both level and verbosity are specified
@@ -243,7 +246,7 @@ def init_logger(
     get_fmt = (lambda _: fmt) if fmt else (
         lambda hdlr: BASIC_LOGGING_FORMAT if plain_format or not
             (devmode or fine or isinstance(hdlr, logging.FileHandler)) else
-        DEV_LOGGING_FMT)
+        (FULL_DEV_LOGGING_FMT if use_full_names else DEV_LOGGING_FMT))
 
     fmt_kwargs = {"datefmt": datefmt}
     if style:

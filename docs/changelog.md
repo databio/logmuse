@@ -1,15 +1,25 @@
 # Changelog
 
 ## [0.2.6] -- 2020-03-13
+### Added
+- Parameter in `init_logger` to use complete level names in fuller message format
+
+### Changed
 - Update testing requirements
-- Add new option for full flag names in message format
 
 ## [0.2.5] -- 2019-11-01
-- Added license for conda packaging
+### Added
+- License for conda packaging
 
 ## [0.2.4] -- 2019-07-29
-- Add documentation
+
+### Added
+- New documentation
+
+### Fixed
 - Fix readme display
+
+### Changed
 - Tweak variable names
 
 ## [0.2.1] -- 2019-07-02
