@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.7] -- 2021-09-08
+### Changed
+- Drop support 2to3 for RTD compatibility
+
 ## [0.2.6] -- 2020-03-13
 ### Added
 - Parameter in `init_logger` to use complete level names in fuller message format

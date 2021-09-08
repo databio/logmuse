@@ -20,22 +20,14 @@ def read_reqs(reqs_name):
 # Additional keyword arguments for setup().
 extra = {}
 
-# 2to3
-if sys.version_info >= (3, ):
-    extra["use_2to3"] = True
 extra["install_requires"] = []
 
 with open(os.path.join(PKG, "_version.py"), 'r') as versionfile:
     version = versionfile.readline().split()[-1].strip("\"'\n")
 
-# Handle the pypi README (long description) formatting.
-try:
-    import pypandoc
-    long_description = pypandoc.convert_file('README.md', 'rst')
-    msg = "\033[032mPandoc conversion succeeded.\033[0m"
-except(IOError, ImportError, OSError):
-    msg = "\033[0;31mWarning: pandoc conversion failed! Readme should not be uploaded to pypi.\033[0m"
-    long_description = open('README.md').read()
+# Handle the pypi README formatting.
+with open('README.md') as f:
+    long_description = f.read()
 
 setup(
     name=PKG,
@@ -62,6 +54,3 @@ setup(
     setup_requires=(["pytest-runner"] if {"test", "pytest", "ptr"} & set(sys.argv) else []),
     **extra
 )
-
-
-print(msg)

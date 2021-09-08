@@ -16,19 +16,29 @@ from ._version import __version__
 __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
 
-__all__ = ["add_logging_options", "logger_via_cli", "init_logger",
-           "setup_logger", "AbsentOptionException", "LOGGING_CLI_OPTDATA"]
+__all__ = [
+    "add_logging_options",
+    "logger_via_cli",
+    "init_logger",
+    "setup_logger",
+    "AbsentOptionException",
+    "LOGGING_CLI_OPTDATA",
+]
 
 
 BASIC_LOGGING_FORMAT = "%(message)s"
-DEV_LOGGING_FMT = "%(levelname).4s %(asctime)s | %(name)s:%(module)s:%(lineno)d > %(message)s "
-FULL_DEV_LOGGING_FMT = "%(levelname)s %(asctime)s | %(name)s:%(module)s:%(lineno)d > %(message)s "
+DEV_LOGGING_FMT = (
+    "%(levelname).4s %(asctime)s | %(name)s:%(module)s:%(lineno)d > %(message)s "
+)
+FULL_DEV_LOGGING_FMT = (
+    "%(levelname)s %(asctime)s | %(name)s:%(module)s:%(lineno)d > %(message)s "
+)
 DEFAULT_DATE_FMT = "%H:%M:%S"
 PACKAGE_NAME = "logmuse"
 STREAMS = {"OUT": sys.stdout, "ERR": sys.stderr}
 DEFAULT_STREAM = STREAMS["ERR"]
 LOGGING_LEVEL = "INFO"
-LOGGING_LOCATIONS = (DEFAULT_STREAM, )
+LOGGING_LOCATIONS = (DEFAULT_STREAM,)
 TRACE_LEVEL_VALUE = 5
 TRACE_LEVEL_NAME = "TRACE"
 CUSTOM_LEVELS = {TRACE_LEVEL_NAME: TRACE_LEVEL_VALUE}
@@ -44,21 +54,28 @@ _WARN_REPR = "WARN"
 LEVEL_BY_VERBOSITY = ["CRITICAL", "ERROR", _WARN_REPR, "INFO", "DEBUG"]
 _MIN_VERBOSITY = 1
 _MAX_VERBOSITY = len(LEVEL_BY_VERBOSITY)
-_VERBOSITY_CHOICES = [str(x) for x in
-                      range(_MIN_VERBOSITY, len(LEVEL_BY_VERBOSITY) + 1)] + \
-                     LEVEL_BY_VERBOSITY + ["WARNING"]
+_VERBOSITY_CHOICES = (
+    [str(x) for x in range(_MIN_VERBOSITY, len(LEVEL_BY_VERBOSITY) + 1)]
+    + LEVEL_BY_VERBOSITY
+    + ["WARNING"]
+)
 
 LOGGING_CLI_OPTDATA = {
     SILENCE_LOGS_OPTNAME: {
         "action": "store_true",
-        "help": "Silence logging. Overrides {}.".format(VERBOSITY_OPTNAME)},
+        "help": "Silence logging. Overrides {}.".format(VERBOSITY_OPTNAME),
+    },
     VERBOSITY_OPTNAME: {
-        "metavar": "V", "choices": _VERBOSITY_CHOICES,
-        "help": "Set logging level ({}-{} or logging module level name)".
-            format(_MIN_VERBOSITY, len(LEVEL_BY_VERBOSITY))},
+        "metavar": "V",
+        "choices": _VERBOSITY_CHOICES,
+        "help": "Set logging level ({}-{} or logging module level name)".format(
+            _MIN_VERBOSITY, len(LEVEL_BY_VERBOSITY)
+        ),
+    },
     DEVMODE_OPTNAME: {
         "action": "store_true",
-        "help": "Expand content of logging message format."}
+        "help": "Expand content of logging message format.",
+    },
 }
 
 
@@ -115,10 +132,21 @@ def logger_via_cli(opts, strict=True, **kwargs):
 
 
 def init_logger(
-        name="", level=None, stream=None, logfile=None,
-        make_root=None, propagate=False, silent=False, devmode=False,
-        verbosity=None, fmt=None, datefmt=DEFAULT_DATE_FMT, plain_format=False,
-        style=None, use_full_names=False):
+    name="",
+    level=None,
+    stream=None,
+    logfile=None,
+    make_root=None,
+    propagate=False,
+    silent=False,
+    devmode=False,
+    verbosity=None,
+    fmt=None,
+    datefmt=DEFAULT_DATE_FMT,
+    plain_format=False,
+    style=None,
+    use_full_names=False,
+):
     """
     Establish and configure primary logger.
 
@@ -172,13 +200,15 @@ def init_logger(
         if propagate:
             logging.warning("Propagation from root logger is nonsense")
         if name and name != "root":
-            logging.warning("Requested root logger with non-root name: "
-                            "{}".format(name))
+            logging.warning(
+                "Requested root logger with non-root name: " "{}".format(name)
+            )
     else:
         name = name or PACKAGE_NAME
         if make_root is False and name == "root":
             raise ValueError(
-                "Requested non-root logger with root name: {}".format(name))
+                "Requested non-root logger with root name: {}".format(name)
+            )
 
     # Enable named ultrafine logging for debugging.
     for level_name, level_value in CUSTOM_LEVELS.items():
@@ -196,8 +226,10 @@ def init_logger(
 
     # Determine the logger's listening level.
     if level is not None and verbosity is not None:
-        raise ValueError("Cannot specify both level and verbosity; got {} and "
-                         "{}, respectively".format(level, verbosity))
+        raise ValueError(
+            "Cannot specify both level and verbosity; got {} and "
+            "{}, respectively".format(level, verbosity)
+        )
     elif level is not None:
         # Handle int- or text-specific logging level.
         try:
@@ -210,8 +242,11 @@ def init_logger(
         level = getattr(logging, level) if isinstance(level, str) else level
         logger.setLevel(level)
     except Exception:
-        logging.error("Can't set logging level to %s; instead using: '%s'",
-                      str(level), str(LOGGING_LEVEL))
+        logging.error(
+            "Can't set logging level to %s; instead using: '%s'",
+            str(level),
+            str(LOGGING_LEVEL),
+        )
         level = LOGGING_LEVEL
         logger.setLevel(level)
 
@@ -223,7 +258,7 @@ def init_logger(
             os.makedirs(logfile_folder)
 
         # Create and add the handler, overwriting rather than appending.
-        handlers.append(logging.FileHandler(logfile, mode='w'))
+        handlers.append(logging.FileHandler(logfile, mode="w"))
     if stream or not logfile:
         if not stream:
             stream = DEFAULT_STREAM
@@ -237,16 +272,25 @@ def init_logger(
             except (AttributeError, KeyError):
                 # Fall back on default stream since
                 # arguments indicate that one should be activated.
-                print("Invalid stream location: {}; using {}".
-                      format(stream, DEFAULT_STREAM))
+                print(
+                    "Invalid stream location: {}; using {}".format(
+                        stream, DEFAULT_STREAM
+                    )
+                )
                 stream_loc = DEFAULT_STREAM
         handlers.append(logging.StreamHandler(stream_loc))
 
     fine = level <= logging.DEBUG
-    get_fmt = (lambda _: fmt) if fmt else (
-        lambda hdlr: BASIC_LOGGING_FORMAT if plain_format or not
-            (devmode or fine or isinstance(hdlr, logging.FileHandler)) else
-        (FULL_DEV_LOGGING_FMT if use_full_names else DEV_LOGGING_FMT))
+    get_fmt = (
+        (lambda _: fmt)
+        if fmt
+        else (
+            lambda hdlr: BASIC_LOGGING_FORMAT
+            if plain_format
+            or not (devmode or fine or isinstance(hdlr, logging.FileHandler))
+            else (FULL_DEV_LOGGING_FMT if use_full_names else DEV_LOGGING_FMT)
+        )
+    )
 
     fmt_kwargs = {"datefmt": datefmt}
     if style:
@@ -254,7 +298,8 @@ def init_logger(
         if vers < (3, 2):
             logging.warning(
                 "Insufficient Python version to specify logging format style: "
-                "{}.{}.{}".format(vers.major, vers.minor, vers.micro))
+                "{}.{}.{}".format(vers.major, vers.minor, vers.micro)
+            )
         else:
             fmt_kwargs["style"] = style
 
@@ -262,22 +307,45 @@ def init_logger(
         h.setFormatter(logging.Formatter(get_fmt(h), **fmt_kwargs))
         h.setLevel(level)
         logger.addHandler(h)
-    logger.debug("Configured logger '%s' using %s v%s",
-                 logger.name, PACKAGE_NAME, __version__)
+    logger.debug(
+        "Configured logger '%s' using %s v%s", logger.name, PACKAGE_NAME, __version__
+    )
 
     return logger
 
 
 def setup_logger(
-        name="", level=None, stream=None, logfile=None,
-        make_root=None, propagate=False, silent=False, devmode=False,
-        verbosity=None, fmt=None, datefmt=None, plain_format=False, style=None):
+    name="",
+    level=None,
+    stream=None,
+    logfile=None,
+    make_root=None,
+    propagate=False,
+    silent=False,
+    devmode=False,
+    verbosity=None,
+    fmt=None,
+    datefmt=None,
+    plain_format=False,
+    style=None,
+):
     """ Old alias for init_logger for backwards compatibility """
-    warnings.warn("Please use init_logger in place of setup_logger",
-                  DeprecationWarning)
+    warnings.warn("Please use init_logger in place of setup_logger", DeprecationWarning)
     return init_logger(
-        name, level, stream, logfile, make_root, propagate,
-        silent, devmode, verbosity, fmt, datefmt, plain_format, style)
+        name,
+        level,
+        stream,
+        logfile,
+        make_root,
+        propagate,
+        silent,
+        devmode,
+        verbosity,
+        fmt,
+        datefmt,
+        plain_format,
+        style,
+    )
 
 
 def _level_from_verbosity(verbosity):
@@ -304,25 +372,30 @@ def _level_from_verbosity(verbosity):
         if v not in LEVEL_BY_VERBOSITY:
             raise ValueError(
                 "Invalid logging verbosity ('{}'); choose from: "
-                "{}".format(verbosity, ", ".join(LEVEL_BY_VERBOSITY)))
+                "{}".format(verbosity, ", ".join(LEVEL_BY_VERBOSITY))
+            )
         return getattr(logging, v)
     elif isinstance(verbosity, int):
-        return LEVEL_BY_VERBOSITY[verbosity - 1]    # 1-based user, 0-based internal
+        return LEVEL_BY_VERBOSITY[verbosity - 1]  # 1-based user, 0-based internal
     else:
-        raise TypeError("Verbosity must be string or int; got {} ({})"
-                        .format(verbosity, type(verbosity)))
+        raise TypeError(
+            "Verbosity must be string or int; got {} ({})".format(
+                verbosity, type(verbosity)
+            )
+        )
 
 
 class AbsentOptionException(Exception):
     """ Exception subtype suggesting that client should add log options. """
+
     def __init__(self, missing_optname):
-        likely_reason = "'{}' not in the parsed options; was {} used to " \
-                        "add CLI logging options to an argument parser?". \
-                format(missing_optname, "{}.{}".format(
-                        __name__, add_logging_options.__name__))
+        likely_reason = (
+            "'{}' not in the parsed options; was {} used to "
+            "add CLI logging options to an argument parser?".format(
+                missing_optname, "{}.{}".format(__name__, add_logging_options.__name__)
+            )
+        )
         super(AbsentOptionException, self).__init__(likely_reason)
-
-
 
 
 # Stolen from peppy. Probably need to make peppy/looper rely on this.
