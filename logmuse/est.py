@@ -285,10 +285,12 @@ def init_logger(
         (lambda _: fmt)
         if fmt
         else (
-            lambda hdlr: BASIC_LOGGING_FORMAT
-            if plain_format
-            or not (devmode or fine or isinstance(hdlr, logging.FileHandler))
-            else (FULL_DEV_LOGGING_FMT if use_full_names else DEV_LOGGING_FMT)
+            lambda hdlr: (
+                BASIC_LOGGING_FORMAT
+                if plain_format
+                or not (devmode or fine or isinstance(hdlr, logging.FileHandler))
+                else (FULL_DEV_LOGGING_FMT if use_full_names else DEV_LOGGING_FMT)
+            )
         )
     )
 
@@ -329,7 +331,7 @@ def setup_logger(
     plain_format=False,
     style=None,
 ):
-    """ Old alias for init_logger for backwards compatibility """
+    """Old alias for init_logger for backwards compatibility"""
     warnings.warn("Please use init_logger in place of setup_logger", DeprecationWarning)
     return init_logger(
         name,
@@ -386,7 +388,7 @@ def _level_from_verbosity(verbosity):
 
 
 class AbsentOptionException(Exception):
-    """ Exception subtype suggesting that client should add log options. """
+    """Exception subtype suggesting that client should add log options."""
 
     def __init__(self, missing_optname):
         likely_reason = (

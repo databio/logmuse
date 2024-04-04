@@ -9,5 +9,5 @@ __email__ = "vreuter@virginia.edu"
 
 @pytest.fixture
 def parser():
-    """ Clean/fresh, blank-slate argument parser instance for a test case """
+    """Clean/fresh, blank-slate argument parser instance for a test case"""
     return argparse.ArgumentParser()
