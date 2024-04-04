@@ -20,7 +20,15 @@ def read_reqs(reqs_name):
 # Additional keyword arguments for setup().
 extra = {}
 
-extra["install_requires"] = []
+DEPENDENCIES = []
+with open("requirements/requirements-all.txt", "r") as reqs_file:
+    for line in reqs_file:
+        if not line.strip():
+            continue
+        DEPENDENCIES.append(line)
+
+extra["install_requires"] = DEPENDENCIES
+
 
 with open(os.path.join(PKG, "_version.py"), "r") as versionfile:
     version = versionfile.readline().split()[-1].strip("\"'\n")
