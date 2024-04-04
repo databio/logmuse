@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.8] -- 2024-04-04
+### Changed
+- Updated Python versions to >3.8
+
 ## [0.2.7] -- 2021-09-08
 ### Changed
 - Drop support 2to3 for RTD compatibility
