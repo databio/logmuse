@@ -7,7 +7,7 @@ import string
 import pytest
 
 from logmuse import add_logging_options
-from logmuse.est import LOGGING_CLI_OPTDATA
+from logmuse.logmuse import LOGGING_CLI_OPTDATA
 
 __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
@@ -70,7 +70,7 @@ def _build_action_usage(act_kind):
     :return function(argparse._StoreAction) -> list[str]: function that when
         given a CLI action will create the representative command line chunks
     """
-    from logmuse.est import _VERBOSITY_CHOICES, VERBOSITY_OPTNAME
+    from logmuse.logmuse import _VERBOSITY_CHOICES, VERBOSITY_OPTNAME
 
     def get_general_use(act):
         name = _get_opt_first_name(act)

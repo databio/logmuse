@@ -9,7 +9,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from logmuse import add_logging_options, logger_via_cli
-from logmuse.est import (
+from logmuse.logmuse import (
     _MAX_VERBOSITY,
     _MIN_VERBOSITY,
     LEVEL_BY_VERBOSITY,

@@ -9,7 +9,7 @@ import sys
 import pytest
 
 from logmuse import init_logger
-from logmuse.est import DEFAULT_STREAM, LOGGING_LEVEL, PACKAGE_NAME
+from logmuse.logmuse import DEFAULT_STREAM, LOGGING_LEVEL, PACKAGE_NAME
 
 __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
