@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.0] -- 2026-03-05
+### Changed
+- Modernized packaging: pyproject.toml with hatchling, removed setup.py
+- Renamed `est.py` to `logmuse.py` (fixes #11)
+- Added type hints and Google-style docstrings
+- Updated CI: ruff for linting, Python 3.10-3.14
+- Requires Python >=3.10
+- Added README usage documentation, removed standalone docs site (fixes #3)
+- Removed stale codecov.yml, .travis.yml
+
 ## [0.2.8] -- 2024-04-04
 ### Changed
 - Updated Python versions to >3.8
