@@ -1,21 +1,23 @@
-""" Tests for call to setup and get logger from CLI opts/args """
+"""Tests for call to setup and get logger from CLI opts/args"""
 
 import argparse
 import logging
 import sys
-from hypothesis import given, strategies as st
+
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
+
 from logmuse import add_logging_options, logger_via_cli
-from logmuse.est import (
-    AbsentOptionException,
+from logmuse.logmuse import (
+    _MAX_VERBOSITY,
+    _MIN_VERBOSITY,
     LEVEL_BY_VERBOSITY,
     LOGGING_CLI_OPTDATA,
     SILENCE_LOGS_OPTNAME,
     VERBOSITY_OPTNAME,
-    _MIN_VERBOSITY,
-    _MAX_VERBOSITY,
+    AbsentOptionException,
 )
-
 
 __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
@@ -90,15 +92,17 @@ def test_typical_verbosity(parser, verbosity):
 
 
 @given(verbosity=st.integers(-sys.maxsize, -1))
-def test_negative_verbosity(parser, verbosity):
+def test_negative_verbosity(verbosity):
     """Verbosity is pulled up to min logging level."""
+    parser = add_logging_options(argparse.ArgumentParser())
     with pytest.raises(SystemExit):
         parser.parse_args([VERBOSITY_OPTNAME, str(verbosity)])
 
 
 @given(verbosity=st.integers(len(LEVEL_BY_VERBOSITY) + 1, sys.maxsize))
-def test_excess_verbosity(parser, verbosity):
+def test_excess_verbosity(verbosity):
     """Verbosity saturates / maxes out."""
+    parser = add_logging_options(argparse.ArgumentParser())
     with pytest.raises(SystemExit):
         parser.parse_args([VERBOSITY_OPTNAME, str(verbosity)])
 

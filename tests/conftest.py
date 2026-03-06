@@ -1,6 +1,7 @@
-""" Test fixture setup and general functional sharing """
+"""Test fixture setup and general functional sharing"""
 
 import argparse
+
 import pytest
 
 __author__ = "Vince Reuter"

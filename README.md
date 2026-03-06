@@ -1,9 +1,116 @@
 # logmuse
 
-[![Build Status](https://github.com/databio/logmuse/actions/workflows/run-pytest.yml/badge.svg?branch=master)](https://github.com/databio/logmuse/actions/workflows/run-pytest.yml/badge.svg?branch=master)
-[![Coverage Status](https://coveralls.io/repos/github/vreuter/logmuse/badge.svg?branch=master)](https://coveralls.io/github/vreuter/logmuse?branch=master)
+[![Build Status](https://github.com/databio/logmuse/actions/workflows/run-pytest.yml/badge.svg?branch=master)](https://github.com/databio/logmuse/actions/workflows/run-pytest.yml)
 
-Logmuse is a small logging setup package. The point of logmuse is to make it super simple to add CLI-control of logging to your python CLI tool. It just provides a simple interface so that standard arguments can be passed on to the logger.
+A small Python package that makes it easy to add CLI-controllable logging to your command-line tools. It provides a simple interface for standard logging arguments (`--verbosity`, `--silent`, `--logdev`) that can be passed directly to a logger.
 
-It is only useful for CLI tools.
+## Installation
 
+```bash
+pip install logmuse
+```
+
+## Quick start
+
+Add logging options to your CLI and create a logger in three lines:
+
+```python
+import argparse
+import logmuse
+
+parser = argparse.ArgumentParser()
+# your arguments here...
+parser = logmuse.add_logging_options(parser)
+args = parser.parse_args()
+logger = logmuse.logger_via_cli(args)
+
+logger.info("Hello, world!")
+```
+
+This adds `--silent`, `--verbosity`, and `--logdev` options to your CLI automatically.
+
+## Setup for a CLI package
+
+### 1. Add CLI args to your argparser
+
+```python
+parser = logmuse.add_logging_options(parser)
+```
+
+This gives you `--verbosity`, `--silent`, and `--logdev` options.
+
+### 2. Activate in your main function
+
+```python
+import logmuse
+
+def main():
+    # ... parse args ...
+    logger = logmuse.logger_via_cli(args, make_root=True)
+```
+
+That's it. Call `logger_via_cli` once in your CLI entry point, and all loggers in your package (and its dependencies) will respect the CLI options.
+
+### For imported packages
+
+Imported packages don't need logmuse at all. Just use the standard `logging` module:
+
+```python
+import logging
+_LOGGER = logging.getLogger(__name__)
+```
+
+The CLI arguments passed to logmuse will control these loggers too.
+
+### Avoid calling `init_logger` at import time
+
+Do **not** put `logmuse.init_logger()` in your package's `__init__.py`. This replaces the logger's handlers at import time, which prevents it from inheriting configuration from a root logger. This causes problems when your package is used as a library (not via its own CLI).
+
+## Using logmuse interactively
+
+To set logging to DEBUG in an interactive session:
+
+```python
+logmuse.init_logger("my_package", "DEBUG", devmode=True)
+```
+
+## Usage reference
+
+### CLI options
+
+`add_logging_options(parser)` adds three arguments to an `argparse.ArgumentParser`:
+
+| Option | Effect |
+|---|---|
+| `--silent` | Silence all logging output |
+| `--verbosity V` | Set logging level (1=CRITICAL, 2=ERROR, 3=WARN, 4=INFO, 5=DEBUG, or a level name) |
+| `--logdev` | Use a detailed developer log format with timestamps, module, and line numbers |
+
+### `init_logger` parameters
+
+| Parameter | Default | Description |
+|---|---|---|
+| `name` | `"logmuse"` | Logger name |
+| `level` | `None` | Logging level (int or string) |
+| `verbosity` | `None` | Verbosity level (1-5); alternative to `level` |
+| `silent` | `False` | Silence all output |
+| `devmode` | `False` | Use detailed developer format |
+| `stream` | `stderr` | Output stream (`"OUT"` for stdout, `"ERR"` for stderr) |
+| `logfile` | `None` | Path to log file (mutes stream output) |
+| `make_root` | `None` | Use as root logger |
+| `propagate` | `False` | Allow messages to reach parent loggers |
+| `fmt` | `None` | Custom format string |
+| `datefmt` | `"%H:%M:%S"` | Time format |
+| `plain_format` | `False` | Force plain format even in devmode |
+| `style` | `None` | Format style (`%`, `{`, or `$`) |
+| `use_full_names` | `False` | Don't truncate level names |
+
+### Verbosity levels
+
+| Verbosity | Logging Level |
+|---|---|
+| 1 | CRITICAL |
+| 2 | ERROR |
+| 3 | WARN |
+| 4 | INFO |
+| 5 | DEBUG |

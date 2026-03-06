@@ -1,2 +1,0 @@
-pytest>=4.6.9
-hypothesis==4.38.0

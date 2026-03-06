@@ -1,13 +1,15 @@
-""" Tests for basic logger setup call """
+"""Tests for basic logger setup call"""
 
 import itertools
 import logging
 import random
 import string
 import sys
+
 import pytest
+
 from logmuse import init_logger
-from logmuse.est import DEFAULT_STREAM, LOGGING_LEVEL, PACKAGE_NAME
+from logmuse.logmuse import DEFAULT_STREAM, LOGGING_LEVEL, PACKAGE_NAME
 
 __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
@@ -155,8 +157,9 @@ def _check_handler(h, lev=None, loc=None):
             lev = getattr(logging, lev)
         elif not isinstance(lev, int):
             raise TypeError(
-                "Expected logging level is neither string nor int: "
-                "{} ({})".format(lev, type(lev))
+                "Expected logging level is neither string nor int: {} ({})".format(
+                    lev, type(lev)
+                )
             )
         if h.level != lev:
             fails.append("Wrong level (expected {} but got {})".format(lev, h.level))
@@ -170,8 +173,9 @@ def _check_handler(h, lev=None, loc=None):
                 fails.append("Expected a stream handler but found {}".format(type(h)))
             elif h.stream != loc:
                 fails.append(
-                    "Unexpected handler location; expected {} but "
-                    "found {}".format(loc.name, h.stream.name)
+                    "Unexpected handler location; expected {} but found {}".format(
+                        loc.name, h.stream.name
+                    )
                 )
         elif isinstance(loc, str):
             exp_type = logging.FileHandler
@@ -200,7 +204,7 @@ def _check_hdlr_kind(l, k, omit=None):
         (lambda _: True) if omit is None else (lambda hdlr: not isinstance(hdlr, omit))
     )
     hs = [h for h in l.handlers if use1(h) and use2(h)]
-    assert 1 == len(hs), "Expected exactly 1 handler of type {} but " "found {}".format(
+    assert 1 == len(hs), "Expected exactly 1 handler of type {} but found {}".format(
         k, len(hs)
     )
     return hs[0]
