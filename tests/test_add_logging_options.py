@@ -1,11 +1,13 @@
-""" Tests for addition of logging options to CLI opt/arg parser """
+"""Tests for addition of logging options to CLI opt/arg parser"""
 
 import argparse
 import random
 import string
+
+import pytest
+
 from logmuse import add_logging_options
 from logmuse.est import LOGGING_CLI_OPTDATA
-import pytest
 
 __author__ = "Vince Reuter"
 __email__ = "vreuter@virginia.edu"
