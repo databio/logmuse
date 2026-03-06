@@ -130,6 +130,7 @@ def init_logger(
     level: int | str | None = None,
     stream: str | IO | None = None,
     logfile: str | None = None,
+    logfile_mode: str = "a",
     make_root: bool | None = None,
     propagate: bool = False,
     silent: bool = False,
@@ -156,6 +157,8 @@ def init_logger(
             a path to a file via logfile.
         logfile: Path to filesystem location to use as logs destination.
             If provided, this mutes standard stream logging.
+        logfile_mode: File open mode for logfile. Default is "a" (append).
+            Use "w" to overwrite.
         make_root: Whether to use returned logger as root logger.
         propagate: Whether to allow messages from this logger to reach
             parent logger(s).
@@ -236,7 +239,7 @@ def init_logger(
         logfile_folder = os.path.dirname(logfile)
         if not os.path.exists(logfile_folder):
             os.makedirs(logfile_folder)
-        handlers.append(logging.FileHandler(logfile, mode="w"))
+        handlers.append(logging.FileHandler(logfile, mode=logfile_mode))
     if stream or not logfile:
         if not stream:
             stream = DEFAULT_STREAM
@@ -312,6 +315,7 @@ def setup_logger(
     level: int | str | None = None,
     stream: str | IO | None = None,
     logfile: str | None = None,
+    logfile_mode: str = "a",
     make_root: bool | None = None,
     propagate: bool = False,
     silent: bool = False,
@@ -330,6 +334,7 @@ def setup_logger(
         level,
         stream,
         logfile,
+        logfile_mode,
         make_root,
         propagate,
         silent,
