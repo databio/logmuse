@@ -277,6 +277,26 @@ def init_logger(
         h.setFormatter(logging.Formatter(get_fmt(h), **fmt_kwargs))
         h.setLevel(level)
         logger.addHandler(h)
+
+    # If coloredlogs is installed, colorize stream handlers.
+    try:
+        import coloredlogs
+
+        for h in handlers:
+            if isinstance(h, logging.StreamHandler) and not isinstance(
+                h, logging.FileHandler
+            ):
+                coloredlogs.install(
+                    level=level,
+                    logger=logger,
+                    stream=h.stream,
+                    fmt=get_fmt(h),
+                    **fmt_kwargs,
+                )
+                break
+    except ImportError:
+        pass
+
     logger.debug(
         "Configured logger '%s' using %s v%s",
         logger.name,

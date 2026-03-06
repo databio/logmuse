@@ -31,16 +31,7 @@ This adds `--silent`, `--verbosity`, and `--logdev` options to your CLI automati
 
 ## Setup for a CLI package
 
-### 1. Initialize in `__init__.py`
-
-```python
-import logmuse
-logmuse.init_logger("my_package")
-```
-
-This sets up default logging parameters for within-Python use. Only do this in the CLI package, not in imported library packages.
-
-### 2. Add CLI args to your argparser
+### 1. Add CLI args to your argparser
 
 ```python
 parser = logmuse.add_logging_options(parser)
@@ -48,16 +39,17 @@ parser = logmuse.add_logging_options(parser)
 
 This gives you `--verbosity`, `--silent`, and `--logdev` options.
 
-### 3. Activate in your main function
+### 2. Activate in your main function
 
 ```python
 import logmuse
 
 def main():
     # ... parse args ...
-    global _LOGGER
-    _LOGGER = logmuse.logger_via_cli(args, make_root=True)
+    logger = logmuse.logger_via_cli(args, make_root=True)
 ```
+
+That's it. Call `logger_via_cli` once in your CLI entry point, and all loggers in your package (and its dependencies) will respect the CLI options.
 
 ### For imported packages
 
@@ -69,6 +61,10 @@ _LOGGER = logging.getLogger(__name__)
 ```
 
 The CLI arguments passed to logmuse will control these loggers too.
+
+### Avoid calling `init_logger` at import time
+
+Do **not** put `logmuse.init_logger()` in your package's `__init__.py`. This replaces the logger's handlers at import time, which prevents it from inheriting configuration from a root logger. This causes problems when your package is used as a library (not via its own CLI).
 
 ## Using logmuse interactively
 
