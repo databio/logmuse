@@ -44,6 +44,7 @@ This gives you `--verbosity`, `--silent`, and `--logdev` options.
 ```python
 import logmuse
 
+
 def main():
     # ... parse args ...
     logger = logmuse.logger_via_cli(args, make_root=True)
@@ -57,6 +58,7 @@ Imported packages don't need logmuse at all. Just use the standard `logging` mod
 
 ```python
 import logging
+
 _LOGGER = logging.getLogger(__name__)
 ```
 
