@@ -21,7 +21,7 @@ __all__ = [
 ]
 
 
-BASIC_LOGGING_FORMAT: str = "%(message)s"
+BASIC_LOGGING_FORMAT: str = "[%(levelname)s] [%(asctime)s] [%(name)s] %(message)s"
 DEV_LOGGING_FMT: str = (
     "%(levelname).4s %(asctime)s | %(name)s:%(module)s:%(lineno)d > %(message)s "
 )

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.1] -- 2026-08-07
+### Changed
+- Default (non-devmode) log message format now includes level, timestamp, and logger name: `[%(levelname)s] [%(asctime)s] [%(name)s] %(message)s` (was bare `%(message)s`). This is what downstream packages were reconfiguring by hand.
+- Because the logger name is now included, downstream packages no longer need to hand-roll a per-package prefix (e.g. `[BEDBOSS]`, `[PEPDBAGENT]`) in their own format strings; `%(name)s` reports the actual originating logger, including submodules.
+- Development mode (`--logdev`/`devmode=True`) and log file output formats are unchanged.
+
 ## [0.3.0] -- 2026-03-05
 ### Changed
 - Modernized packaging: pyproject.toml with hatchling, removed setup.py
